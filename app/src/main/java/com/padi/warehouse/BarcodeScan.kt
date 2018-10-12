@@ -13,6 +13,7 @@ import com.padi.warehouse.common.CameraSource
 import com.padi.warehouse.textrecognition.TextRecognitionProcessor
 import kotlinx.android.synthetic.main.activity_barcode_scan.*
 import java.io.IOException
+import java.net.URL
 import java.util.*
 
 class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
@@ -72,7 +73,9 @@ class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResu
                     BARCODE_DETECTION -> {
                         Log.i(TAG, "Using Barcode Detector Processor")
                         it.setMachineLearningFrameProcessor(BarcodeScanningProcessor { result ->
-                            Log.d("PANOS", result)
+                            BarcodeSearch { product ->
+                                Log.d(TAG, product)
+                            }.execute(result)
                             finish()
                         })
                     }
@@ -162,14 +165,10 @@ class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResu
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    public fun onBarcodeIdentified(callback: (String) -> Unit) {
-
-    }
-
     companion object {
         private const val TEXT_DETECTION = "Text Detection"
         private const val BARCODE_DETECTION = "Barcode Detection"
-        private const val TAG = "LivePreviewActivity"
+        private const val TAG = "BarcodeScan"
         private const val PERMISSION_REQUESTS = 1
 
         private fun isPermissionGranted(context: Context, permission: String): Boolean {
