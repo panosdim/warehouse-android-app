@@ -13,7 +13,6 @@ import com.padi.warehouse.common.CameraSource
 import com.padi.warehouse.textrecognition.TextRecognitionProcessor
 import kotlinx.android.synthetic.main.activity_barcode_scan.*
 import java.io.IOException
-import java.net.URL
 import java.util.*
 
 class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
