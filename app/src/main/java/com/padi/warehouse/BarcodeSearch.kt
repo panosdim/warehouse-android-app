@@ -15,7 +15,6 @@ import de.timroes.axmlrpc.XMLRPCException
 import de.timroes.axmlrpc.XMLRPCCallback
 
 
-
 class BarcodeSearch(private val mCallback: (result: String) -> Unit) : AsyncTask<String, Void, String>() {
 
     override fun doInBackground(vararg params: String): String {
@@ -72,7 +71,7 @@ class BarcodeSearch(private val mCallback: (result: String) -> Unit) : AsyncTask
         return response
     }
 
-    fun searchUPCdatabase(barcode: String): String {
+    private fun searchUPCdatabase(barcode: String): String {
         val listener: XMLRPCCallback = object : XMLRPCCallback {
             override fun onResponse(id: Long, result: Any) {
                 // Handling the servers response

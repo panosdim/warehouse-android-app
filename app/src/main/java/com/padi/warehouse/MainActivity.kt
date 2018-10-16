@@ -14,6 +14,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import com.firebase.ui.auth.AuthUI
 import com.google.firebase.FirebaseApp
 
 import kotlinx.android.synthetic.main.activity_main.*
@@ -63,8 +64,14 @@ class MainActivity : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
 
-        if (id == R.id.action_settings) {
-            return true
+        if (id == R.id.action_logout) {
+            AuthUI.getInstance()
+                    .signOut(this)
+                    .addOnCompleteListener {
+                        val intent = Intent(this, Login::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                    }
         }
 
         return super.onOptionsItemSelected(item)
