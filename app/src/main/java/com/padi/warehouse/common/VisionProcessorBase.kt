@@ -1,13 +1,10 @@
-package com.padi.warehouse
+package com.padi.warehouse.common
 
 import android.graphics.Bitmap
 import android.media.Image
 import com.google.android.gms.tasks.Task
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
-import com.padi.warehouse.common.FrameMetadata
-import com.padi.warehouse.common.GraphicOverlay
-import com.padi.warehouse.common.VisionImageProcessor
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 

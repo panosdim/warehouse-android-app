@@ -4,11 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 
-const val RC_SIGN_IN = 0
 
 class Login : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -37,7 +37,7 @@ class Login : AppCompatActivity() {
                             .setAvailableProviders(providers)
                             .setLogo(R.drawable.ic_stock)      // Set logo drawable
                             .build(),
-                    RC_SIGN_IN)
+                    RC.SIGN_IN.code)
         } else {
             // Successfully signed in
             val intent = Intent(this, MainActivity::class.java)
@@ -50,7 +50,7 @@ class Login : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == RC_SIGN_IN) {
+        if (requestCode == RC.SIGN_IN.code) {
             val response = IdpResponse.fromResultIntent(data)
 
             if (resultCode == Activity.RESULT_OK) {
@@ -62,7 +62,8 @@ class Login : AppCompatActivity() {
                 // Sign in failed. If response is null the user canceled the
                 // sign-in flow using the back button. Otherwise check
                 // response.getError().getErrorCode() and handle the error.
-                // ...
+                Toast.makeText(this, response?.error?.toString(),
+                        Toast.LENGTH_LONG).show()
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.padi.warehouse
+package com.padi.warehouse.barcodescanning
 
 import android.os.AsyncTask
 import android.util.Log
@@ -10,9 +10,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
 import javax.net.ssl.HttpsURLConnection
-import de.timroes.axmlrpc.XMLRPCServerException
-import de.timroes.axmlrpc.XMLRPCException
-import de.timroes.axmlrpc.XMLRPCCallback
 
 
 class BarcodeSearch(private val mCallback: (result: String) -> Unit) : AsyncTask<String, Void, String>() {
@@ -26,7 +23,7 @@ class BarcodeSearch(private val mCallback: (result: String) -> Unit) : AsyncTask
                 return result
             }
         }
-        result = searchUPCdatabase(params[0])
+        result = searchUPCDatabase(params[0])
         Log.d(TAG, "UPC Database Result: $result")
         return result
     }
@@ -41,7 +38,6 @@ class BarcodeSearch(private val mCallback: (result: String) -> Unit) : AsyncTask
         try {
             val jsonParam = JSONObject()
             jsonParam.put("barcode", barcode)
-            Log.d(TAG, jsonParam.toString())
 
             url = URL("http://warehouse.cc.nf/api/v1/barcode.php")
 
@@ -71,34 +67,19 @@ class BarcodeSearch(private val mCallback: (result: String) -> Unit) : AsyncTask
         return response
     }
 
-    private fun searchUPCdatabase(barcode: String): String {
-        val listener: XMLRPCCallback = object : XMLRPCCallback {
-            override fun onResponse(id: Long, result: Any) {
-                // Handling the servers response
-                Log.d(TAG, result.toString())
-            }
-
-            override fun onError(id: Long, error: XMLRPCException) {
-                // Handling any error in the library
-            }
-
-            override fun onServerError(id: Long, error: XMLRPCServerException) {
-                // Handling an error response from the server
-            }
-        }
+    private fun searchUPCDatabase(barcode: String): String {
+        var response = ""
         try {
-            Log.d(TAG, barcode)
             val client = XMLRPCClient(URL("https://www.upcdatabase.com/xmlrpc"))
             val params = HashMap<String, String>()
             params["rpc_key"] = "23e95561fc6d2942d45f5ce9ad3bd1bd4b338789"
             params["ean"] = barcode
-            val result = client.callAsync(listener, "lookup", params)
-            Log.d(TAG, result.toString())
+            response = client.call("lookup", params).toString()
         } catch (ex: Exception) {
             // Any other exception
             Log.d(TAG, ex.toString())
         } finally {
-            return ""
+            return response
         }
     }
 

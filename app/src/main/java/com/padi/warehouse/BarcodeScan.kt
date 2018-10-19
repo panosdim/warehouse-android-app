@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.google.firebase.ml.common.FirebaseMLException
 import com.padi.warehouse.barcodescanning.BarcodeScanningProcessor
+import com.padi.warehouse.barcodescanning.BarcodeSearch
 import com.padi.warehouse.common.CameraSource
 import com.padi.warehouse.textrecognition.TextRecognitionProcessor
 import kotlinx.android.synthetic.main.activity_barcode_scan.*

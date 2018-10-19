@@ -6,7 +6,7 @@ import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer
-import com.padi.warehouse.VisionProcessorBase
+import com.padi.warehouse.common.VisionProcessorBase
 import com.padi.warehouse.common.FrameMetadata
 import com.padi.warehouse.common.GraphicOverlay
 import java.io.IOException
