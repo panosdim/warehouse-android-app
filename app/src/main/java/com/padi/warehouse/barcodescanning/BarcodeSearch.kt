@@ -2,34 +2,49 @@ package com.padi.warehouse.barcodescanning
 
 import android.os.AsyncTask
 import android.util.Log
+import com.google.gson.Gson
 import de.timroes.axmlrpc.XMLRPCClient
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 import javax.net.ssl.HttpsURLConnection
 
 
-class BarcodeSearch(private val mCallback: (result: String) -> Unit) : AsyncTask<String, Void, String>() {
+class BarcodeSearch(private val mCallback: (result: JSONObject) -> Unit) : AsyncTask<String, Void, JSONObject>() {
 
-    override fun doInBackground(vararg params: String): String {
+    override fun doInBackground(vararg params: String): JSONObject {
         var result = findProduct(params[0])
         Log.d(TAG, "i520 Result: $result")
         if (result.isNotEmpty()) {
             val res = JSONObject(result)
             if (res.getBoolean("found")) {
-                return result
+                return res
             }
         }
         result = searchUPCDatabase(params[0])
         Log.d(TAG, "UPC Database Result: $result")
-        return result
+        val res = convertStringToHashMap(result)
+        return JSONObject(Gson().toJson(res))
     }
 
-    override fun onPostExecute(result: String) {
+    override fun onPostExecute(result: JSONObject) {
         mCallback(result)
+    }
+
+    private fun convertStringToHashMap(text: String): HashMap<String, String> {
+        var value = text
+        value = value.substring(1, value.length - 1)    //remove curly brackets
+        val keyValuePairs = value.split(",") //split the string to create key-value pairs
+        val map = HashMap<String, String>()
+
+        for (pair in keyValuePairs)
+        {
+            val entry = pair.split("=")
+            map[entry[0].trim()] = entry[1].trim()
+        }
+        return map
     }
 
     private fun findProduct(barcode: String): String {

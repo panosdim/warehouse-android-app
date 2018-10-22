@@ -1,7 +1,10 @@
 package com.padi.warehouse
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -72,11 +75,20 @@ class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResu
                     }
                     BARCODE_DETECTION -> {
                         Log.i(TAG, "Using Barcode Detector Processor")
-                        it.setMachineLearningFrameProcessor(BarcodeScanningProcessor { result ->
-                            BarcodeSearch { product ->
-                                Log.d(TAG, product)
-                            }.execute(result)
+                        val search = BarcodeSearch { product ->
+                            Log.d(TAG, "Product: $product")
+                            val returnIntent = Intent()
+                            if (product.getBoolean("found")) {
+                                returnIntent.putExtra("result", product.getString("description"))
+                            }
+                            setResult(Activity.RESULT_OK, returnIntent)
                             finish()
+                        }
+                        it.setMachineLearningFrameProcessor(BarcodeScanningProcessor { result ->
+                            if (search.status == AsyncTask.Status.PENDING) {
+                                Log.d(TAG, "Executing Search")
+                                search.execute(result)
+                            }
                         })
                     }
                     else -> Log.e(TAG, "Unknown model: $model")

@@ -4,4 +4,7 @@
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="logout">Logout</string>
     <string name="food_details_title">Food Details</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="name">Name</string>
 </resources>
