@@ -16,3 +16,10 @@ enum class RC(val code: Int) {
     FILTER_ADD_INCOME(7),
     FILTER_DELETE_INCOME(8)
 }
+
+enum class DRAWABLE(val index: Int) {
+    LEFT(0),
+    TOP(1),
+    RIGHT(2),
+    BOTTOM(3)
+}
