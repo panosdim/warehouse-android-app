@@ -35,4 +35,29 @@
             android:hint="@string/exp_date"
             android:inputType="date" />
     </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/tv_food_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/amount"
+            android:inputType="numberDecimal" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/tv_food_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/box"
+            android:inputType="numberDecimal" />
+    </android.support.design.widget.TextInputLayout>
+
 </LinearLayout>

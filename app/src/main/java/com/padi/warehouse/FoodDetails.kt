@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.support.v7.app.AppCompatActivity
+import android.text.InputFilter
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -78,12 +79,17 @@ class FoodDetails : AppCompatActivity() {
             }
             false
         })
+
+        // Set decimal filter to amount
+        tv_food_amount.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter(2))
+
+        // Set decimal filter to box
+        tv_food_box.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter(2))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == RC.BARCODE_SCAN.code) {
-                Log.d(TAG, "PANOS")
                 val product = data?.getStringExtra("result")
                 Log.d(TAG, "Found product: $product")
                 if (product != null) {

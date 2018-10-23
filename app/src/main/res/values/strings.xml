@@ -8,4 +8,6 @@
     <string name="delete">Delete</string>
     <string name="name">Name</string>
     <string name="exp_date">Expiration Date</string>
+    <string name="amount">Amount</string>
+    <string name="box">Box</string>
 </resources>
