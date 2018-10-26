@@ -10,4 +10,6 @@
     <string name="exp_date">Expiration Date</string>
     <string name="amount">Amount</string>
     <string name="box">Box</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="invalidDate">Invalid Date</string>
 </resources>

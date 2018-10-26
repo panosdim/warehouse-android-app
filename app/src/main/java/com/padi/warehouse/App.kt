@@ -1,5 +1,7 @@
 package com.padi.warehouse
 
+import com.google.firebase.auth.FirebaseAuth
+
 enum class MSG(val message: String) {
     LOG_OUT("com.panosdim.warehouse.logout"),
     FOOD_ITEM("com.panosdim.warehouse.food_item")
@@ -23,3 +25,5 @@ enum class DRAWABLE(val index: Int) {
     RIGHT(2),
     BOTTOM(3)
 }
+
+var user = FirebaseAuth.getInstance().currentUser

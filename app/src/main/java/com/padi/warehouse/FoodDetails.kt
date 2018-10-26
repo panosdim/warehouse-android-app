@@ -13,11 +13,15 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import com.padi.warehouse.R.layout.activity_food_details
 import kotlinx.android.synthetic.main.activity_food_details.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import com.google.firebase.database.FirebaseDatabase
+
+
 
 class FoodDetails : AppCompatActivity() {
     private var item = FoodItem(name = "", exp_date = "", amount = "", box = "")
@@ -99,6 +103,84 @@ class FoodDetails : AppCompatActivity() {
         }
     }
 
+    private fun validateInputs() {
+        // Reset errors.
+        tv_food_name.error = null
+        tv_food_exp_date.error = null
+        tv_food_amount.error = null
+        tv_food_box.error = null
+
+        // Store values.
+        val name = tv_food_name.text.toString()
+        val exp_date = tv_food_exp_date.text.toString()
+        val amount = tv_food_amount.text.toString()
+        val box = tv_food_box.text.toString()
+
+        var cancel = false
+        var focusView: View? = null
+
+        // Check for a valid name.
+        if (name.isEmpty()) {
+            tv_food_name.error = getString(R.string.error_field_required)
+            focusView = tv_food_name
+            cancel = true
+        }
+
+        // Check for a valid expiration date.
+        if (exp_date.isEmpty()) {
+            tv_food_exp_date.error = getString(R.string.error_field_required)
+            focusView = tv_food_exp_date
+            cancel = true
+        } else {
+            try {
+                mDateFormatter.parse(exp_date)
+            } catch (e: ParseException) {
+                tv_food_exp_date.error = getString(R.string.invalidDate)
+                focusView = tv_food_exp_date
+                cancel = true
+            }
+        }
+
+        // Check for a valid amount.
+        if (amount.isEmpty()) {
+            tv_food_amount.error = getString(R.string.error_field_required)
+            focusView = tv_food_amount
+            cancel = true
+        }
+
+        // Check for a valid box.
+        if (box.isEmpty()) {
+            tv_food_box.error = getString(R.string.error_field_required)
+            focusView = tv_food_box
+            cancel = true
+        }
+
+        if (cancel) {
+            // There was an error; don't attempt to store data and focus the first
+            // form field with an error.
+            focusView!!.requestFocus()
+        } else {
+            item.name = name
+            item.exp_date = exp_date
+            item.amount = amount
+            item.box = box
+
+            // Save item to firebase
+            val database = FirebaseDatabase.getInstance()
+            val myRef = database.getReference("items")
+
+            val newItemRef = myRef.push()
+            newItemRef.setValue(item)
+
+            Toast.makeText(this, "Item Saved Successfully.",
+                    Toast.LENGTH_LONG).show()
+
+            val returnIntent = Intent()
+            setResult(Activity.RESULT_OK, returnIntent)
+            finish()
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.food_details, menu)
@@ -110,7 +192,7 @@ class FoodDetails : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.food_save -> {
-            Log.d(TAG, "Food Save Selected")
+            validateInputs()
             true
         }
 

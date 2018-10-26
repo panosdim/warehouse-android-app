@@ -3,8 +3,9 @@ package com.padi.warehouse
 import android.os.Parcel
 import android.os.Parcelable
 
-data class FoodItem (var id: String? = null, var name: String, var exp_date: String, var amount: String, var box: String): Parcelable {
+data class FoodItem (var id: String? = null, var uid: String? = user?.uid, var name: String, var exp_date: String, var amount: String, var box: String) : Parcelable {
     constructor(parcel: Parcel) : this(
+            parcel.readString(),
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
@@ -14,6 +15,7 @@ data class FoodItem (var id: String? = null, var name: String, var exp_date: Str
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)
+        parcel.writeString(uid)
         parcel.writeString(name)
         parcel.writeString(exp_date)
         parcel.writeString(amount)
@@ -33,4 +35,5 @@ data class FoodItem (var id: String? = null, var name: String, var exp_date: Str
             return arrayOfNulls(size)
         }
     }
+
 }
