@@ -14,8 +14,8 @@ import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
-import com.padi.warehouse.R.layout.activity_food_details
-import kotlinx.android.synthetic.main.activity_food_details.*
+import com.padi.warehouse.R.layout.activity_item_details
+import kotlinx.android.synthetic.main.activity_item_details.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,7 +24,7 @@ import com.google.firebase.database.FirebaseDatabase
 
 
 class FoodDetails : AppCompatActivity() {
-    private var item = FoodItem(name = "", exp_date = "", amount = "", box = "")
+    private var item = Item(name = "", exp_date = "", amount = "", box = "")
     private val bundle: Bundle? by lazy { intent.extras }
     private lateinit var datePickerDialog: DatePickerDialog
     private lateinit var mCalendar: Calendar
@@ -34,13 +34,13 @@ class FoodDetails : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(activity_food_details)
+        setContentView(activity_item_details)
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar!!.setDisplayShowHomeEnabled(true)
 
         if (bundle != null) {
-            item = bundle!!.getParcelable<Parcelable>(MSG.FOOD_ITEM.message) as FoodItem
+            item = bundle!!.getParcelable<Parcelable>(MSG.FOOD_ITEM.message) as Item
         }
 
         tv_food_name.setOnTouchListener(View.OnTouchListener { _, event ->
