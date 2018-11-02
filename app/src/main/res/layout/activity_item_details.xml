@@ -8,14 +8,14 @@
     android:layout_marginEnd="8dp"
     android:layout_marginBottom="8dp"
     android:orientation="vertical"
-    tools:context=".ItemDetails">
+    tools:context=".item.ItemDetails">
 
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/tv_food_name"
+            android:id="@+id/tv_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableEnd="@drawable/barcode"
@@ -28,7 +28,7 @@
         android:layout_height="match_parent">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/tv_food_exp_date"
+            android:id="@+id/tv_exp_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableEnd="@drawable/calendar"
@@ -41,7 +41,7 @@
         android:layout_height="match_parent">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/tv_food_amount"
+            android:id="@+id/tv_amount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/amount"
@@ -53,7 +53,7 @@
         android:layout_height="match_parent">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/tv_food_box"
+            android:id="@+id/tv_box"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/box"

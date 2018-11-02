@@ -1,4 +1,4 @@
-package com.padi.warehouse
+package com.padi.warehouse.barcodescanning
 
 import android.app.Activity
 import android.content.Context
@@ -12,8 +12,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.padi.warehouse.common.CameraSource
 import com.google.firebase.ml.common.FirebaseMLException
-import com.padi.warehouse.barcodescanning.BarcodeScanningProcessor
-import com.padi.warehouse.barcodescanning.BarcodeSearch
+import com.padi.warehouse.R
 import kotlinx.android.synthetic.main.activity_barcode_scan.*
 import java.io.IOException
 import java.util.*

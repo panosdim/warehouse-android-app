@@ -1,15 +1,17 @@
 package com.padi.warehouse
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.padi.warehouse.item.Item
 
 enum class MSG(val message: String) {
     LOG_OUT("com.panosdim.warehouse.logout"),
-    FOOD_ITEM("com.panosdim.warehouse.food_item")
+    ITEM("com.panosdim.warehouse.item")
 }
 
 enum class RC(val code: Int) {
     SIGN_IN(0),
-    ADD_FOOD(1),
+    ITEM(1),
     BARCODE_SCAN(2),
     FILTER_INCOME(3),
     FILTER_EXPENSE(4),
@@ -27,3 +29,5 @@ enum class DRAWABLE(val index: Int) {
 }
 
 var user = FirebaseAuth.getInstance().currentUser
+val database = FirebaseDatabase.getInstance()
+var items: MutableList<Item> = mutableListOf()

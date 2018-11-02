@@ -1,21 +1,18 @@
-package com.padi.warehouse
+package com.padi.warehouse.item
 
 import android.os.Parcel
 import android.os.Parcelable
 
-data class Item (var id: String? = null, var uid: String? = user?.uid, var name: String, var exp_date: String, var amount: String, var box: String) : Parcelable {
+data class Item (var id: String? = null, var name: String? = null, var exp_date: String? = null, var amount: String? = null, var box: String? = null) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
-            parcel.readString(),
-            parcel.readString()) {
-    }
+            parcel.readString())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)
-        parcel.writeString(uid)
         parcel.writeString(name)
         parcel.writeString(exp_date)
         parcel.writeString(amount)
