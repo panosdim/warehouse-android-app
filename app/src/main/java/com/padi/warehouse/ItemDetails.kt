@@ -23,7 +23,7 @@ import com.google.firebase.database.FirebaseDatabase
 
 
 
-class FoodDetails : AppCompatActivity() {
+class ItemDetails : AppCompatActivity() {
     private var item = Item(name = "", exp_date = "", amount = "", box = "")
     private val bundle: Bundle? by lazy { intent.extras }
     private lateinit var datePickerDialog: DatePickerDialog
@@ -71,7 +71,7 @@ class FoodDetails : AppCompatActivity() {
                     val cDay = mCalendar.get(Calendar.DAY_OF_MONTH)
 
                     // date picker dialog
-                    datePickerDialog = DatePickerDialog(this@FoodDetails,
+                    datePickerDialog = DatePickerDialog(this@ItemDetails,
                             DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
                                 // set day of month , month and year value in the edit text
                                 mCalendar.set(year, month, dayOfMonth, 0, 0)
@@ -220,6 +220,6 @@ class FoodDetails : AppCompatActivity() {
     }
 
     companion object {
-        private const val TAG = "FoodDetails"
+        private const val TAG = "ItemDetails"
     }
 }

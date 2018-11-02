@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         fab.setOnClickListener { _ ->
-            val intent = Intent(this, FoodDetails::class.java)
+            val intent = Intent(this, ItemDetails::class.java)
             startActivityForResult(intent, RC.ADD_FOOD.code)
         }
 

@@ -10,11 +10,10 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import com.padi.warehouse.common.CameraSource
 import com.google.firebase.ml.common.FirebaseMLException
 import com.padi.warehouse.barcodescanning.BarcodeScanningProcessor
 import com.padi.warehouse.barcodescanning.BarcodeSearch
-import com.padi.warehouse.common.CameraSource
-import com.padi.warehouse.textrecognition.TextRecognitionProcessor
 import kotlinx.android.synthetic.main.activity_barcode_scan.*
 import java.io.IOException
 import java.util.*
@@ -69,10 +68,6 @@ class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResu
         try {
             cameraSource?.let {
                 when (model) {
-                    TEXT_DETECTION -> {
-                        Log.i(TAG, "Using Text Detector Processor")
-                        it.setMachineLearningFrameProcessor(TextRecognitionProcessor())
-                    }
                     BARCODE_DETECTION -> {
                         Log.i(TAG, "Using Barcode Detector Processor")
                         val search = BarcodeSearch { product ->
@@ -114,7 +109,7 @@ class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResu
                 if (fireFaceOverlay == null) {
                     Log.d(TAG, "resume: graphOverlay is null")
                 }
-                firePreview.start(it, fireFaceOverlay)
+                firePreview.start(it!!, fireFaceOverlay)
             } catch (e: IOException) {
                 Log.e(TAG, "Unable to start camera source.", e)
                 it?.release()
@@ -178,7 +173,6 @@ class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResu
     }
 
     companion object {
-        private const val TEXT_DETECTION = "Text Detection"
         private const val BARCODE_DETECTION = "Barcode Detection"
         private const val TAG = "BarcodeScan"
         private const val PERMISSION_REQUESTS = 1
