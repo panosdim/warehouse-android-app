@@ -11,4 +11,6 @@
     <string name="invalidDate">Invalid Date</string>
     <string name="item_details_title">Item Details</string>
     <string name="search">Search</string>
+    <string name="search_hint">Search for Items</string>
+    <string name="search_results">Search Results</string>
 </resources>

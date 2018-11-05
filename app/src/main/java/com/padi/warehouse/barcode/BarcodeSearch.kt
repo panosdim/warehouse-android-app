@@ -1,4 +1,4 @@
-package com.padi.warehouse.barcodescanning
+package com.padi.warehouse.barcode
 
 import android.os.AsyncTask
 import android.util.Log

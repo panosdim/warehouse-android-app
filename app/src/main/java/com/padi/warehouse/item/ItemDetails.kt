@@ -20,7 +20,7 @@ import kotlinx.android.synthetic.main.activity_item_details.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
-import com.padi.warehouse.barcodescanning.BarcodeScan
+import com.padi.warehouse.barcode.BarcodeScan
 
 
 class ItemDetails : AppCompatActivity() {
