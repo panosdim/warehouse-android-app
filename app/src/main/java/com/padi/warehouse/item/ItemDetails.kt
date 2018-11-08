@@ -104,6 +104,7 @@ class ItemDetails : AppCompatActivity() {
                 if (product != null) {
                     tv_name.setText(product)
                 }
+                //TODO: If not found ask user for description and store it in firebase
             }
         }
     }
