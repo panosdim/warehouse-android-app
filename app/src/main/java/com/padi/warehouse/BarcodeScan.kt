@@ -1,4 +1,4 @@
-package com.padi.warehouse.barcode
+package com.padi.warehouse
 
 import android.content.pm.PackageManager
 import android.os.Bundle

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.padi.warehouse.barcode.BarcodeScan">
+    tools:context="com.padi.warehouse.BarcodeScan">
 
     <!--  set custom layout for scanner-->
     <com.journeyapps.barcodescanner.DecoratedBarcodeView

@@ -12,7 +12,10 @@ import android.view.View
 import android.widget.SearchView
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.FirebaseApp
-import com.google.firebase.database.*
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.padi.warehouse.item.Item
 import com.padi.warehouse.item.ItemAdapter
 import com.padi.warehouse.item.ItemDetails
@@ -114,6 +117,18 @@ class MainActivity : AppCompatActivity() {
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         (menu.findItem(R.id.app_bar_search).actionView as SearchView).apply {
             setSearchableInfo(searchManager.getSearchableInfo(componentName))
+            val sv = this
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextChange(p0: String?): Boolean {
+                    return true
+                }
+
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    sv.setQuery("", false)
+                    sv.isIconified = true
+                    return false
+                }
+            })
         }
 
         return true

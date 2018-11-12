@@ -21,7 +21,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.zxing.integration.android.IntentIntegrator
 import com.padi.warehouse.*
 import com.padi.warehouse.R.layout.activity_item_details
-import com.padi.warehouse.barcode.BarcodeScan
+import com.padi.warehouse.BarcodeScan
 import kotlinx.android.synthetic.main.activity_item_details.*
 import kotlinx.android.synthetic.main.add_product_description.view.*
 import kotlinx.coroutines.Dispatchers.IO
