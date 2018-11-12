@@ -1,188 +1,93 @@
 package com.padi.warehouse.barcode
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.AsyncTask
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
-import com.padi.warehouse.common.CameraSource
-import com.google.firebase.ml.common.FirebaseMLException
+import android.view.KeyEvent
+import android.view.View
+import com.journeyapps.barcodescanner.CaptureManager
+import com.journeyapps.barcodescanner.DecoratedBarcodeView
 import com.padi.warehouse.R
 import kotlinx.android.synthetic.main.activity_barcode_scan.*
-import java.io.IOException
-import java.util.*
 
-class BarcodeScan : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
-    private var cameraSource: CameraSource? = null
-    private var selectedModel = BARCODE_DETECTION
+class BarcodeScan : AppCompatActivity(), DecoratedBarcodeView.TorchListener {
 
-    private val requiredPermissions: Array<String?>
-        get() {
-            return try {
-                val info = this.packageManager
-                        .getPackageInfo(this.packageName, PackageManager.GET_PERMISSIONS)
-                val ps = info.requestedPermissions
-                if (ps != null && ps.isNotEmpty()) {
-                    ps
-                } else {
-                    arrayOfNulls(0)
-                }
-            } catch (e: Exception) {
-                arrayOfNulls(0)
-            }
-
-        }
+    private var capture: CaptureManager? = null
+    private var isFlashLightOn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate")
-
         setContentView(R.layout.activity_barcode_scan)
 
-        if (firePreview == null) {
-            Log.d(TAG, "Preview is null")
-        }
-        if (fireFaceOverlay == null) {
-            Log.d(TAG, "graphicOverlay is null")
-        }
+        //set torch listener
+        zxing_barcode_scanner.setTorchListener(this)
 
-        if (allPermissionsGranted()) {
-            createCameraSource(selectedModel)
+        // if the device does not have flashlight in its camera,
+        // then remove the switch flashlight button...
+        if (!hasFlash()) {
+            switch_flashlight.visibility = View.GONE
         } else {
-            getRuntimePermissions()
+            switch_flashlight.setOnClickListener { switchFlashlight() }
         }
+
+        //start capture
+        capture = CaptureManager(this, zxing_barcode_scanner)
+        capture!!.initializeFromIntent(intent, savedInstanceState)
+        capture!!.decode()
     }
 
-    private fun createCameraSource(model: String) {
-        // If there's no existing cameraSource, create one.
-        if (cameraSource == null) {
-            cameraSource = CameraSource(this, fireFaceOverlay)
-        }
-
-        try {
-            cameraSource?.let {
-                when (model) {
-                    BARCODE_DETECTION -> {
-                        Log.i(TAG, "Using Barcode Detector Processor")
-                        val search = BarcodeSearch { product ->
-                            Log.d(TAG, "Product: $product")
-                            val returnIntent = Intent()
-                            if (product.getBoolean("found")) {
-                                returnIntent.putExtra("result", product.getString("description"))
-                            }
-                            setResult(Activity.RESULT_OK, returnIntent)
-                            finish()
-                        }
-                        it.setMachineLearningFrameProcessor(BarcodeScanningProcessor { result ->
-                            if (search.status == AsyncTask.Status.PENDING) {
-                                Log.d(TAG, "Executing Search")
-                                search.execute(result)
-                            }
-                        })
-                    }
-                    else -> Log.e(TAG, "Unknown model: $model")
-                }
-            }
-        } catch (e: FirebaseMLException) {
-            Log.e(TAG, "can not create camera source: $model")
-        }
-
-    }
 
     /**
-     * Starts or restarts the camera source, if it exists. If the camera source doesn't exist yet
-     * (e.g., because onResume was called before the camera source was created), this will be called
-     * again when the camera source is created.
+     * Check if the device's camera has a Flashlight.
+     *
+     * @return true if there is Flashlight, otherwise false.
      */
-    private fun startCameraSource() {
-        cameraSource.let {
-            try {
-                if (firePreview == null) {
-                    Log.d(TAG, "resume: Preview is null")
-                }
-                if (fireFaceOverlay == null) {
-                    Log.d(TAG, "resume: graphOverlay is null")
-                }
-                firePreview.start(it!!, fireFaceOverlay)
-            } catch (e: IOException) {
-                Log.e(TAG, "Unable to start camera source.", e)
-                it?.release()
-                cameraSource = null
-            }
+    private fun hasFlash(): Boolean {
+        return applicationContext.packageManager
+                .hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
+    }
 
+    private fun switchFlashlight() {
+        isFlashLightOn = if (isFlashLightOn) {
+            zxing_barcode_scanner.setTorchOff()
+            false
+        } else {
+            zxing_barcode_scanner.setTorchOn()
+            true
         }
+
     }
 
-    public override fun onResume() {
+    override fun onTorchOn() {
+        switch_flashlight.setText(R.string.flashlight_on)
+    }
+
+    override fun onTorchOff() {
+        switch_flashlight.setText(R.string.flashlight_off)
+    }
+
+    override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume")
-        startCameraSource()
+        capture!!.onResume()
     }
 
-    /** Stops the camera.  */
     override fun onPause() {
         super.onPause()
-        firePreview.stop()
+        capture!!.onPause()
     }
 
-    public override fun onDestroy() {
+    override fun onDestroy() {
         super.onDestroy()
-        cameraSource?.release()
+        capture!!.onDestroy()
     }
 
-    private fun allPermissionsGranted(): Boolean {
-        for (permission in requiredPermissions) {
-            permission?.let {
-                if (!isPermissionGranted(this, it)) {
-                    return false
-                }
-            }
-        }
-        return true
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        capture!!.onSaveInstanceState(outState)
     }
 
-    private fun getRuntimePermissions() {
-        val allNeededPermissions = ArrayList<String>()
-        for (permission in requiredPermissions) {
-            permission?.let {
-                if (!isPermissionGranted(this, it)) {
-                    allNeededPermissions.add(it)
-                }
-            }
-        }
-
-        if (!allNeededPermissions.isEmpty()) {
-            ActivityCompat.requestPermissions(
-                    this, allNeededPermissions.toTypedArray(), PERMISSION_REQUESTS)
-        }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        return zxing_barcode_scanner.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event)
     }
 
-    override fun onRequestPermissionsResult(
-            requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        Log.i(TAG, "Permission granted!")
-        if (allPermissionsGranted()) {
-            createCameraSource(selectedModel)
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    companion object {
-        private const val BARCODE_DETECTION = "Barcode Detection"
-        private const val TAG = "BarcodeScan"
-        private const val PERMISSION_REQUESTS = 1
-
-        private fun isPermissionGranted(context: Context, permission: String): Boolean {
-            if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-                Log.i(TAG, "Permission granted: $permission")
-                return true
-            }
-            Log.i(TAG, "Permission NOT granted: $permission")
-            return false
-        }
-    }
 }

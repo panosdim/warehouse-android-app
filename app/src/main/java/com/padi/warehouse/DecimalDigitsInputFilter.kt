@@ -1,3 +1,5 @@
+@file:Suppress("Annotator")
+
 package com.padi.warehouse
 
 import android.text.InputFilter

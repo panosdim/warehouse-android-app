@@ -6,6 +6,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.InputFilter
 import android.util.Log
@@ -14,13 +15,28 @@ import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.zxing.integration.android.IntentIntegrator
 import com.padi.warehouse.*
 import com.padi.warehouse.R.layout.activity_item_details
+import com.padi.warehouse.barcode.BarcodeScan
 import kotlinx.android.synthetic.main.activity_item_details.*
+import kotlinx.android.synthetic.main.add_product_description.view.*
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.DataOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
-import com.padi.warehouse.barcode.BarcodeScan
+import javax.net.ssl.HttpsURLConnection
 
 
 class ItemDetails : AppCompatActivity() {
@@ -46,8 +62,8 @@ class ItemDetails : AppCompatActivity() {
         tv_name.setOnTouchListener(View.OnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) {
                 if (event.rawX >= (tv_name.right - tv_name.compoundDrawables[DRAWABLE.RIGHT.index].bounds.width())) {
-                    val intent = Intent(this, BarcodeScan::class.java)
-                    startActivityForResult(intent, RC.BARCODE_SCAN.code)
+                    // Initiate scan with zxing custom scan activity
+                    IntentIntegrator(this@ItemDetails).setCaptureActivity(BarcodeScan::class.java).initiateScan()
                     return@OnTouchListener true
                 }
             }
@@ -97,16 +113,102 @@ class ItemDetails : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == RC.BARCODE_SCAN.code) {
-                val product = data?.getStringExtra("result")
-                Log.d(TAG, "Found product: $product")
-                if (product != null) {
-                    tv_name.setText(product)
+        // We will get scan results here
+        val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+        if (result != null) {
+            if (result.contents == null) {
+                Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show()
+            } else {
+                // Search for product from barcode
+                val product = GlobalScope.async(IO) { findProduct(result.contents) }
+                runBlocking {
+                    val prod = product.await()
+                    Log.d(TAG, "Find product: $prod")
+                    if (prod.isNotEmpty()) {
+                        val res = JSONObject(prod)
+                        if (res.getBoolean("found")) {
+                            tv_name.setText(res.getString("description"))
+                        } else {
+                            // Search for product in Firebase Database
+                            val myRef = database.getReference("barcodes").child(result.contents)
+                            myRef.addListenerForSingleValueEvent(object: ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError) {
+                                }
+
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    if (snapshot.value != null)
+                                    {
+                                        Log.d(TAG, "Firebase Result: ${snapshot.value}")
+                                        tv_name.setText(snapshot.value as String)
+                                    } else {
+                                        // Show dialogue to add description when product not found in Firebase Database
+                                        showAddDescriptionDialogue(result.contents)
+                                    }
+                                }
+                            })
+                        }
+                    }
                 }
-                //TODO: If not found ask user for description and store it in firebase
             }
+        } else {
+            // This is important, otherwise the result will not be passed to the fragment
+            super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    private fun findProduct(barcode: String): String {
+        val url: URL
+        var response = ""
+        try {
+            val jsonParam = JSONObject()
+            jsonParam.put("barcode", barcode)
+
+            url = URL("http://warehouse.cc.nf/api/v1/barcode.php")
+
+            val conn = url.openConnection() as HttpURLConnection
+
+            conn.readTimeout = 15000
+            conn.connectTimeout = 15000
+            conn.requestMethod = "POST"
+            conn.doOutput = true
+
+            conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
+
+            val printout = DataOutputStream(conn.outputStream)
+            printout.write(jsonParam.toString().toByteArray(Charsets.UTF_8))
+            printout.flush()
+            printout.close()
+
+            val responseCode = conn.responseCode
+
+            if (responseCode == HttpsURLConnection.HTTP_OK) {
+                response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return response
+    }
+
+    @SuppressLint("InflateParams")
+    private fun showAddDescriptionDialogue(result: String) {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+        val dialogView = layoutInflater.inflate(R.layout.add_product_description, null)
+        builder.setTitle("Product Not Found")
+                .setMessage("Provide product description for $result")
+                .setView(dialogView)
+                .setPositiveButton("Save") { _, _ ->
+                    // Save to Firebase
+                    val myRef = database.getReference("barcodes")
+                    myRef.child(result).setValue(dialogView.tv_prod_desc.text.toString())
+                    tv_name.setText(dialogView.tv_prod_desc.text.toString())
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    // Do nothing
+                    dialog.dismiss()
+                }
+                .show()
     }
 
     private fun validateInputs() {
