@@ -13,8 +13,7 @@
     <string name="search">Search</string>
     <string name="search_hint">Search for Items</string>
     <string name="search_results">Search Results</string>
-    <string name="flashlight_off">FlashLight is off</string>
-    <string name="flashlight_on">FlashLight is on</string>
     <string name="message">Place a barcode inside the viewfinder rectangle to scan it.</string>
     <string name="product_description">Product Description</string>
+    <string name="flashlight">Flashlight</string>
 </resources>

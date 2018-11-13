@@ -1,33 +1,34 @@
 package com.padi.warehouse
 
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.View
 import com.journeyapps.barcodescanner.CaptureManager
-import com.journeyapps.barcodescanner.DecoratedBarcodeView
-import com.padi.warehouse.R
 import kotlinx.android.synthetic.main.activity_barcode_scan.*
 
-class BarcodeScan : AppCompatActivity(), DecoratedBarcodeView.TorchListener {
+class BarcodeScan : AppCompatActivity() {
 
     private var capture: CaptureManager? = null
-    private var isFlashLightOn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_barcode_scan)
-
-        //set torch listener
-        zxing_barcode_scanner.setTorchListener(this)
 
         // if the device does not have flashlight in its camera,
         // then remove the switch flashlight button...
         if (!hasFlash()) {
             switch_flashlight.visibility = View.GONE
         } else {
-            switch_flashlight.setOnClickListener { switchFlashlight() }
+            switch_flashlight.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    zxing_barcode_scanner.setTorchOn()
+                } else {
+                    zxing_barcode_scanner.setTorchOff()
+                }
+            }
         }
 
         //start capture
@@ -45,25 +46,6 @@ class BarcodeScan : AppCompatActivity(), DecoratedBarcodeView.TorchListener {
     private fun hasFlash(): Boolean {
         return applicationContext.packageManager
                 .hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
-    }
-
-    private fun switchFlashlight() {
-        isFlashLightOn = if (isFlashLightOn) {
-            zxing_barcode_scanner.setTorchOff()
-            false
-        } else {
-            zxing_barcode_scanner.setTorchOn()
-            true
-        }
-
-    }
-
-    override fun onTorchOn() {
-        switch_flashlight.setText(R.string.flashlight_on)
-    }
-
-    override fun onTorchOff() {
-        switch_flashlight.setText(R.string.flashlight_off)
     }
 
     override fun onResume() {

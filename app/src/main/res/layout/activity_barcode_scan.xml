@@ -15,11 +15,18 @@
         app:zxing_scanner_layout="@layout/custom_scanner" />
 
     <!--  FlashLight Button-->
-    <Button
+    <ToggleButton
         android:id="@+id/switch_flashlight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:text="@string/flashlight_off" />
+        android:showText="true"
+        android:splitTrack="true"
+        android:switchPadding="@dimen/appbar_padding_top"
+        android:textAlignment="viewStart"
+        android:textColor="@android:color/white"
+        android:textOff="@string/flashlight"
+        android:textOn="@string/flashlight"
+        android:textStyle="bold" />
 </RelativeLayout>
