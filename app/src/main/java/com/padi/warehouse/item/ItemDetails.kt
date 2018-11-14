@@ -18,7 +18,11 @@ import android.widget.Toast
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.WriterException
 import com.google.zxing.integration.android.IntentIntegrator
+import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.padi.warehouse.*
 import com.padi.warehouse.R.layout.activity_item_details
 import com.padi.warehouse.BarcodeScan
@@ -114,41 +118,50 @@ class ItemDetails : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         // We will get scan results here
+        prgSearchBarcode.visibility = View.VISIBLE
+        llvDetails.visibility = View.GONE
         val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if (result != null) {
             if (result.contents == null) {
                 Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show()
             } else {
-                // Search for product from barcode
-                val product = GlobalScope.async(IO) { findProduct(result.contents) }
-                runBlocking {
-                    val prod = product.await()
-                    Log.d(TAG, "Find product: $prod")
-                    if (prod.isNotEmpty()) {
-                        val res = JSONObject(prod)
-                        if (res.getBoolean("found")) {
-                            tv_name.setText(res.getString("description"))
-                        } else {
-                            // Search for product in Firebase Database
-                            val myRef = database.getReference("barcodes").child(result.contents)
-                            myRef.addListenerForSingleValueEvent(object: ValueEventListener {
-                                override fun onCancelled(p0: DatabaseError) {
-                                }
+                // Search for product description from barcode in Firebase
+                val myRef = database.getReference("barcodes").child(result.contents)
+                myRef.addListenerForSingleValueEvent(object: ValueEventListener {
+                    override fun onCancelled(p0: DatabaseError) {
+                    }
 
-                                override fun onDataChange(snapshot: DataSnapshot) {
-                                    if (snapshot.value != null)
-                                    {
-                                        Log.d(TAG, "Firebase Result: ${snapshot.value}")
-                                        tv_name.setText(snapshot.value as String)
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.value != null)
+                        {
+                            Log.d(TAG, "Firebase Result: ${snapshot.value}")
+                            tv_name.setText(snapshot.value as String)
+                            prgSearchBarcode.visibility = View.GONE
+                            llvDetails.visibility = View.VISIBLE
+                        } else {
+                            // Search for product description in i520 service
+                            val product = GlobalScope.async(IO) { findProductDescription(result.contents) }
+                            runBlocking {
+                                val prod = product.await()
+                                Log.d(TAG, "Find product: $prod")
+                                if (prod.isNotEmpty()) {
+                                    prgSearchBarcode.visibility = View.GONE
+                                    llvDetails.visibility = View.VISIBLE
+                                    val res = JSONObject(prod)
+                                    if (res.getBoolean("found")) {
+                                        tv_name.setText(res.getString("description"))
+                                        // Store description in database
+                                        val myRef = database.getReference("barcodes")
+                                        myRef.child(result.contents).setValue(res.getString("description"))
                                     } else {
-                                        // Show dialogue to add description when product not found in Firebase Database
+                                        // Show dialogue to add description when product not found
                                         showAddDescriptionDialogue(result.contents)
                                     }
                                 }
-                            })
+                            }
                         }
                     }
-                }
+                })
             }
         } else {
             // This is important, otherwise the result will not be passed to the fragment
@@ -156,7 +169,7 @@ class ItemDetails : AppCompatActivity() {
         }
     }
 
-    private fun findProduct(barcode: String): String {
+    private fun findProductDescription(barcode: String): String {
         val url: URL
         var response = ""
         try {
@@ -193,10 +206,20 @@ class ItemDetails : AppCompatActivity() {
 
     @SuppressLint("InflateParams")
     private fun showAddDescriptionDialogue(result: String) {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         val dialogView = layoutInflater.inflate(R.layout.add_product_description, null)
+        val multiFormatWriter = MultiFormatWriter()
+        try {
+            val bitMatrix = multiFormatWriter.encode(result, BarcodeFormat.EAN_13, 350, 150)
+            val barcodeEncoder = BarcodeEncoder()
+            val bitmap = barcodeEncoder.createBitmap(bitMatrix)
+            dialogView.imageView.setImageBitmap(bitmap)
+            dialogView.barcode.text = result
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         builder.setTitle("Product Not Found")
-                .setMessage("Provide product description for $result")
                 .setView(dialogView)
                 .setPositiveButton("Save") { _, _ ->
                     // Save to Firebase

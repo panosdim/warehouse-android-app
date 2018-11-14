@@ -1,7 +1,6 @@
 package com.padi.warehouse
 
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent

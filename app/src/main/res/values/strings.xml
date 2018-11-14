@@ -16,4 +16,5 @@
     <string name="message">Place a barcode inside the viewfinder rectangle to scan it.</string>
     <string name="product_description">Product Description</string>
     <string name="flashlight">Flashlight</string>
+    <string name="barcode_image">Barcode Image</string>
 </resources>
