@@ -9,4 +9,5 @@
     <color name="zxingPrimary">#f44336</color>
     <color name="zxingPrimaryDark">#d32f2f</color>
     <color name="zxingAccent">#00c853</color>
+    <color name="white">#fff</color>
 </resources>

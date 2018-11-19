@@ -48,6 +48,7 @@ class ItemAdapter(private val itemsList: List<Item>, private val clickListener: 
             itemView.amount.text = "${itemView.context.getString(R.string.amount)}: ${itm.amount}"
             itemView.expDate.text = itm.exp_date
             itemView.box.text = "${itemView.context.getString(R.string.box)}: ${itm.box}"
+            itemView.cvItem.setCardBackgroundColor(ResourcesCompat.getColor(itemView.resources, R.color.white, null))
             if (itm.exp_date!!.isNotEmpty()) {
                 val date = mDateFormatter.parse(itm.exp_date)
 

@@ -6,6 +6,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.InputFilter
@@ -20,12 +21,10 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
-import com.google.zxing.WriterException
 import com.google.zxing.integration.android.IntentIntegrator
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.padi.warehouse.*
 import com.padi.warehouse.R.layout.activity_item_details
-import com.padi.warehouse.BarcodeScan
 import kotlinx.android.synthetic.main.activity_item_details.*
 import kotlinx.android.synthetic.main.add_product_description.view.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -48,6 +47,7 @@ class ItemDetails : AppCompatActivity() {
     private val bundle: Bundle? by lazy { intent.extras }
     private lateinit var datePickerDialog: DatePickerDialog
     private lateinit var mCalendar: Calendar
+    private lateinit var mSnackbar: Snackbar
 
     @SuppressLint("SimpleDateFormat")
     private val mDateFormatter = SimpleDateFormat("yyyy-MM-dd")
@@ -118,8 +118,8 @@ class ItemDetails : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         // We will get scan results here
-        prgSearchBarcode.visibility = View.VISIBLE
-        llvDetails.visibility = View.GONE
+        mSnackbar = Snackbar.make(llvDetails, "Searching for product name in online database.", Snackbar.LENGTH_LONG)
+        mSnackbar.show()
         val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if (result != null) {
             if (result.contents == null) {
@@ -136,8 +136,7 @@ class ItemDetails : AppCompatActivity() {
                         {
                             Log.d(TAG, "Firebase Result: ${snapshot.value}")
                             tv_name.setText(snapshot.value as String)
-                            prgSearchBarcode.visibility = View.GONE
-                            llvDetails.visibility = View.VISIBLE
+                            mSnackbar.dismiss()
                         } else {
                             // Search for product description in i520 service
                             val product = GlobalScope.async(IO) { findProductDescription(result.contents) }
@@ -145,14 +144,13 @@ class ItemDetails : AppCompatActivity() {
                                 val prod = product.await()
                                 Log.d(TAG, "Find product: $prod")
                                 if (prod.isNotEmpty()) {
-                                    prgSearchBarcode.visibility = View.GONE
-                                    llvDetails.visibility = View.VISIBLE
+                                    mSnackbar.dismiss()
                                     val res = JSONObject(prod)
                                     if (res.getBoolean("found")) {
                                         tv_name.setText(res.getString("description"))
                                         // Store description in database
-                                        val myRef = database.getReference("barcodes")
-                                        myRef.child(result.contents).setValue(res.getString("description"))
+                                        val barcodeRef = database.getReference("barcodes")
+                                        barcodeRef.child(result.contents).setValue(res.getString("description"))
                                     } else {
                                         // Show dialogue to add description when product not found
                                         showAddDescriptionDialogue(result.contents)

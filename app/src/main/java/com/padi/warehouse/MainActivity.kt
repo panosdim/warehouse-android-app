@@ -23,11 +23,21 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
-    val mItemsOrder = Comparator<Item> { p1, p2 ->
+    private val mExpDateAsc = Comparator<Item> { p1, p2 ->
         when {
             p1.exp_date.isNullOrEmpty() -> 1
             p2.exp_date.isNullOrEmpty() -> -1
             p1.exp_date!! > p2.exp_date!! -> 1
+            p1.exp_date == p2.exp_date -> 0
+            else -> -1
+        }
+    }
+
+    private val mExpDateDesc = Comparator<Item> { p1, p2 ->
+        when {
+            p1.exp_date.isNullOrEmpty() -> -1
+            p2.exp_date.isNullOrEmpty() -> 1
+            p1.exp_date!! > p2.exp_date!! -> -1
             p1.exp_date == p2.exp_date -> 0
             else -> -1
         }
@@ -49,13 +59,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                items.sortWith(mItemsOrder)
                 val itemViewAdapter = ItemAdapter(items) { itm: Item -> itemClicked(itm) }
 
                 rvItems.setHasFixedSize(true)
                 rvItems.layoutManager = LinearLayoutManager(this@MainActivity)
                 rvItems.adapter = itemViewAdapter
                 progressBar.visibility = View.GONE
+                sortItems()
             }
 
         })
@@ -72,8 +82,7 @@ class MainActivity : AppCompatActivity() {
                 item?.id = dataSnapshot.key
                 val index = items.indexOfFirst { itm -> itm.id == item!!.id }
                 items[index] = item!!
-                items.sortWith(mItemsOrder)
-                rvItems.adapter?.notifyDataSetChanged()
+                sortItems()
             }
 
             override fun onChildRemoved(dataSnapshot: DataSnapshot) {
@@ -87,10 +96,18 @@ class MainActivity : AppCompatActivity() {
                 val item = dataSnapshot.getValue<Item>(Item::class.java)
                 item?.id = dataSnapshot.key
                 items.add(item!!)
-                items.sortWith(mItemsOrder)
-                rvItems.adapter?.notifyDataSetChanged()
+                sortItems()
             }
         })
+
+        // Listeners for Items sort
+        rgField.setOnCheckedChangeListener { _, _ ->
+            sortItems()
+        }
+
+        rgDirection.setOnCheckedChangeListener { _, _ ->
+            sortItems()
+        }
 
         fab.setOnClickListener {
             val intent = Intent(this, ItemDetails::class.java)
@@ -146,11 +163,55 @@ class MainActivity : AppCompatActivity() {
                     }
             true
         }
-        //TODO: Add sort functionality
+        R.id.action_sort -> {
+            sortItems.visibility = if (sortItems.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            true
+        }
         else -> {
             // If we got here, the user's action was not recognized.
             // Invoke the superclass to handle it.
             super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun sortItems() {
+        when (rgField.checkedRadioButtonId) {
+            R.id.rbName -> {
+                when (rgDirection.checkedRadioButtonId) {
+                    R.id.rbAscending -> {
+                        items.sortBy { it.name }
+                    }
+                    R.id.rbDescending -> {
+                        items.sortByDescending { it.name }
+                    }
+                }
+            }
+
+            R.id.rbExpDate -> {
+                when (rgDirection.checkedRadioButtonId) {
+                    R.id.rbAscending -> {
+                        items.sortWith(mExpDateAsc)
+                    }
+                    R.id.rbDescending -> {
+                        items.sortWith(mExpDateDesc)
+                    }
+                }
+            }
+
+            R.id.rbBox -> {
+                when (rgDirection.checkedRadioButtonId) {
+                    R.id.rbAscending -> {
+                        items.sortBy { it.box }
+                    }
+                    R.id.rbDescending -> {
+                        items.sortByDescending { it.box }
+                    }
+                }
+            }
+
+            else -> {
+            }
+        }
+        rvItems.adapter?.notifyDataSetChanged()
     }
 }

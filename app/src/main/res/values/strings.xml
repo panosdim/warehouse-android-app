@@ -17,4 +17,8 @@
     <string name="product_description">Product Description</string>
     <string name="flashlight">Flashlight</string>
     <string name="barcode_image">Barcode Image</string>
+    <string name="sort_by">Sort By</string>
+    <string name="descending">Descending</string>
+    <string name="ascending">Ascending</string>
+    <string name="sort">Sort</string>
 </resources>
