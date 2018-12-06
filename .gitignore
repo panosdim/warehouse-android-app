@@ -9,3 +9,5 @@
 /build
 /captures
 .externalNativeBuild
+app/release/output.json
+app/release/Warehouse-1.0.apk

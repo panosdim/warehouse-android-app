@@ -12,6 +12,7 @@ enum class MSG(val message: String) {
 enum class RC(val code: Int) {
     SIGN_IN(0),
     ITEM(1),
+    PERMISSION_REQUEST(2)
 }
 
 enum class DRAWABLE(val index: Int) {

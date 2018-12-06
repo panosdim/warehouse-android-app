@@ -114,6 +114,9 @@ class ItemDetails : AppCompatActivity() {
         tv_box.setText(item.box)
         tv_name.setText(item.name)
         tv_exp_date.setText(item.exp_date)
+
+        // Set Strict check for Date Formatter
+        mDateFormatter.isLenient = false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -174,7 +177,7 @@ class ItemDetails : AppCompatActivity() {
             val jsonParam = JSONObject()
             jsonParam.put("barcode", barcode)
 
-            url = URL("http://warehouse.cc.nf/api/v1/barcode.php")
+            url = URL("https://warehouse.cc.nf/api/v1/barcode.php")
 
             val conn = url.openConnection() as HttpURLConnection
 

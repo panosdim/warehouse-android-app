@@ -1,9 +1,17 @@
 package com.padi.warehouse
 
+import android.Manifest
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
@@ -20,6 +28,13 @@ import com.padi.warehouse.item.Item
 import com.padi.warehouse.item.ItemAdapter
 import com.padi.warehouse.item.ItemDetails
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import java.net.HttpURLConnection
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
+import java.io.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -67,7 +82,6 @@ class MainActivity : AppCompatActivity() {
                 progressBar.visibility = View.GONE
                 sortItems()
             }
-
         })
 
         itemsRef.orderByChild("exp_date").addChildEventListener(object : ChildEventListener {
@@ -114,6 +128,106 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, RC.ITEM.code)
         }
 
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    RC.PERMISSION_REQUEST.code)
+        }
+
+        GlobalScope.launch {
+            checkForNewVersion()
+
+        }
+    }
+
+    private fun checkForNewVersion() {
+        val url: URL
+        val response: String
+        try {
+            url = URL("https://warehouse.cc.nf/api/v1/output.json")
+
+            val conn = url.openConnection() as HttpURLConnection
+
+            conn.readTimeout = 15000
+            conn.connectTimeout = 15000
+            conn.requestMethod = "GET"
+            conn.doOutput = false
+
+            conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
+
+            val responseCode = conn.responseCode
+
+            if (responseCode == HttpsURLConnection.HTTP_OK) {
+                response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                val version = JSONArray(response).getJSONObject(0).getJSONObject("apkInfo").getString("versionName")
+                if (packageManager.getPackageInfo(packageName, 0).versionName != version) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        downloadNewVersion()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun downloadNewVersion() {
+        val url: URL
+        try {
+
+            var destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).canonicalPath + "/"
+            val fileName = "Warehouse.apk"
+            destination += fileName
+
+            //Delete update file if exists
+            val file = File(destination)
+            if (file.exists())
+                file.delete()
+
+            url = URL("https://warehouse.cc.nf/api/v1/app-release.apk")
+
+            val conn = url.openConnection() as HttpURLConnection
+
+            conn.readTimeout = 15000
+            conn.connectTimeout = 15000
+            conn.requestMethod = "GET"
+
+            val responseCode = conn.responseCode
+
+            if (responseCode == HttpsURLConnection.HTTP_OK) {
+                conn.inputStream.use { input ->
+                    File(destination).outputStream().use { fileOut ->
+                        input.copyTo(fileOut)
+                    }
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val apk = File(downloads, fileName)
+                    val apkUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", apk)
+
+                    val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
+                    intent.data = apkUri
+                    intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    startActivity(intent)
+                } else {
+                    val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val apk = File(downloads, fileName)
+                    val apkUri = Uri.fromFile(apk)
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(intent)
+                }
+
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun itemClicked(itm: Item) {
