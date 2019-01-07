@@ -26,3 +26,4 @@ enum class DRAWABLE(val index: Int) {
 var user = FirebaseAuth.getInstance().currentUser
 val database = FirebaseDatabase.getInstance()
 var items: MutableList<Item> = mutableListOf()
+const val CHANNEL_ID = "Warehouse-Channel"

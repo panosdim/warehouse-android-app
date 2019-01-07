@@ -1,6 +1,8 @@
 package com.padi.warehouse
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
@@ -18,6 +20,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.SearchView
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ChildEventListener
@@ -31,10 +36,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONArray
+import java.io.BufferedReader
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
-import java.io.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -60,9 +67,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        createNotificationChannel()
         FirebaseApp.initializeApp(this)
         setContentView(R.layout.activity_main)
-
         setSupportActionBar(toolbar)
 
         progressBar.visibility = View.VISIBLE
@@ -137,9 +145,35 @@ class MainActivity : AppCompatActivity() {
                     RC.PERMISSION_REQUEST.code)
         }
 
+        // Check for expired items
+        val itemExpiredBuilder =
+                PeriodicWorkRequestBuilder<ExpiredItemsWorker>(30, TimeUnit.DAYS)
+
+        val itemExpiredWork = itemExpiredBuilder.build()
+        // Then enqueue the recurring task:
+        WorkManager.getInstance().enqueueUniquePeriodicWork("itemExpired", ExistingPeriodicWorkPolicy.KEEP, itemExpiredWork)
+
         GlobalScope.launch {
             checkForNewVersion()
 
+        }
+    }
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val descriptionText = getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
     }
 

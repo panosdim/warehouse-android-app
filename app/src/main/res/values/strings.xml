@@ -21,4 +21,6 @@
     <string name="descending">Descending</string>
     <string name="ascending">Ascending</string>
     <string name="sort">Sort</string>
+    <string name="channel_name">warehouse-channel</string>
+    <string name="channel_description">Expired Items Channel</string>
 </resources>
