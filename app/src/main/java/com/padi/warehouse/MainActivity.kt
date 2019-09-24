@@ -11,11 +11,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.support.v4.content.FileProvider
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity() {
 
         val itemExpiredWork = itemExpiredBuilder.build()
         // Then enqueue the recurring task:
-        WorkManager.getInstance().enqueueUniquePeriodicWork("itemExpired", ExistingPeriodicWorkPolicy.KEEP, itemExpiredWork)
+        WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork("itemExpired", ExistingPeriodicWorkPolicy.KEEP, itemExpiredWork)
 
         GlobalScope.launch {
             checkForNewVersion()
@@ -196,7 +196,7 @@ class MainActivity : AppCompatActivity() {
 
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-                val version = JSONArray(response).getJSONObject(0).getJSONObject("apkInfo").getString("versionName")
+                val version = JSONArray(response).getJSONObject(0).getJSONObject("apkData").getString("versionName")
                 if (packageManager.getPackageInfo(packageName, 0).versionName != version) {
                     if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                             ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {

@@ -2,7 +2,7 @@ package com.padi.warehouse
 
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.View
 import com.journeyapps.barcodescanner.CaptureManager

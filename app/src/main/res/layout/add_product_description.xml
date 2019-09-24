@@ -20,16 +20,16 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <android.support.design.widget.TextInputLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp">
 
-        <android.support.design.widget.TextInputEditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tv_prod_desc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/product_description"
             android:inputType="textCapCharacters" />
-    </android.support.design.widget.TextInputLayout>
+    </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

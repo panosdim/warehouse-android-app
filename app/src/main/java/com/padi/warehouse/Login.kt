@@ -3,7 +3,8 @@ package com.padi.warehouse
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
@@ -46,6 +47,8 @@ class Login : AppCompatActivity() {
 
         if (requestCode == RC.SIGN_IN.code) {
             val response = IdpResponse.fromResultIntent(data)
+            Log.d("###", response.toString())
+            Log.d("###", resultCode.toString())
 
             if (resultCode == Activity.RESULT_OK) {
                 // Successfully signed in

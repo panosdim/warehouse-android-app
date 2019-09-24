@@ -3,9 +3,9 @@ package com.padi.warehouse
 import android.app.Activity
 import android.app.SearchManager
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.util.Log
 import com.padi.warehouse.item.Item
 import com.padi.warehouse.item.ItemAdapter
