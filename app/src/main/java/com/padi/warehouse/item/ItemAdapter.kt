@@ -1,15 +1,17 @@
 package com.padi.warehouse.item
 
 import android.annotation.SuppressLint
-import androidx.core.content.res.ResourcesCompat
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
+import androidx.recyclerview.widget.RecyclerView
 import com.padi.warehouse.R
 import kotlinx.android.synthetic.main.item_row.view.*
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDate
+import java.time.LocalDate.now
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 
 class ItemAdapter(private val itemsList: List<Item>, private val clickListener: (Item) -> Unit) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -33,15 +35,10 @@ class ItemAdapter(private val itemsList: List<Item>, private val clickListener: 
     override fun getItemCount() = itemsList.size
 
     class IncomeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        @SuppressLint("SimpleDateFormat")
-        private val mDateFormatter = SimpleDateFormat("yyyy-MM-dd")
-        private val today = Date()
-        private val calendar = Calendar.getInstance()!!
-        init {
-            calendar.add(Calendar.MONTH, 1)
-            calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
-        }
-        private val nextMonthLastDay = calendar.time
+        private val today = now()
+        private val dateFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+        private val nextMonthLastDay = today.with(TemporalAdjusters.firstDayOfNextMonth()).with(TemporalAdjusters.lastDayOfMonth())
+
         @SuppressLint("SetTextI18n")
         fun bind(itm: Item, clickListener: (Item) -> Unit) {
             itemView.name.text = itm.name
@@ -50,13 +47,14 @@ class ItemAdapter(private val itemsList: List<Item>, private val clickListener: 
             itemView.box.text = "${itemView.context.getString(R.string.box)}: ${itm.box}"
             itemView.cvItem.setCardBackgroundColor(ResourcesCompat.getColor(itemView.resources, R.color.white, null))
             if (itm.exp_date!!.isNotEmpty()) {
-                val date = mDateFormatter.parse(itm.exp_date)
+                val date = LocalDate.parse(itm.exp_date)
+                itemView.expDate.text = date.format(dateFormatter)
 
-                if (date.before(today)) {
+                if (date.isBefore(today)) {
                     itemView.cvItem.setCardBackgroundColor(ResourcesCompat.getColor(itemView.resources, R.color.red, null))
                 }
 
-                if (date.before(nextMonthLastDay) && date.after(today)) {
+                if ((date.isBefore(nextMonthLastDay) || date.isEqual(nextMonthLastDay)) && date.isAfter(today)) {
                     itemView.cvItem.setCardBackgroundColor(ResourcesCompat.getColor(itemView.resources, R.color.yellow, null))
                 }
             }

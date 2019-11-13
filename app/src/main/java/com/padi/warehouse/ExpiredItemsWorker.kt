@@ -1,6 +1,5 @@
 package com.padi.warehouse
 
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -12,10 +11,11 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.padi.warehouse.item.Item
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDate
+import java.time.LocalDate.now
+import java.time.format.DateTimeFormatter
 
-class ExpiredItemsWorker(context : Context, params : WorkerParameters)
+class ExpiredItemsWorker(context: Context, params: WorkerParameters)
     : Worker(context, params) {
 
     override fun doWork(): Result {
@@ -38,20 +38,18 @@ class ExpiredItemsWorker(context : Context, params : WorkerParameters)
 
         itemsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
+                // Not used
             }
 
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                @SuppressLint("SimpleDateFormat")
-                val mDateFormatter = SimpleDateFormat("yyyy-MM-dd")
-                val today = Date()
+                val mDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                val today = now()
                 for (itemSnapshot in dataSnapshot.children) {
-                    // TODO: handle the post
                     val item = itemSnapshot.getValue<Item>(Item::class.java)
-                    println("TEST" +  item!!.name + item.exp_date)
-                    if (item.exp_date!!.isNotEmpty()) {
-                        val date = mDateFormatter.parse(item.exp_date)
+                    if (item!!.exp_date!!.isNotEmpty()) {
+                        val date = LocalDate.parse(item.exp_date, mDateFormatter)
 
-                        if (date.before(today)) {
+                        if (date.isBefore(today)) {
                             with(NotificationManagerCompat.from(applicationContext)) {
                                 // notificationId is a unique int for each notification that you must define
                                 notify(0, mBuilder.build())

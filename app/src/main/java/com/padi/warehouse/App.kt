@@ -5,7 +5,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.padi.warehouse.item.Item
 
 enum class MSG(val message: String) {
-    LOG_OUT("com.panosdim.warehouse.logout"),
     ITEM("com.panosdim.warehouse.item")
 }
 
@@ -16,10 +15,7 @@ enum class RC(val code: Int) {
 }
 
 enum class DRAWABLE(val index: Int) {
-    LEFT(0),
-    TOP(1),
     RIGHT(2),
-    BOTTOM(3)
 }
 
 // TODO: Add Offline capabilities for Firebase Database

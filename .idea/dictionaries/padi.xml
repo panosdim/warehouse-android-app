@@ -1,8 +1,10 @@
 <component name="ProjectDictionaryState">
   <dictionary name="padi">
     <words>
+      <w>barcodes</w>
       <w>fileprovider</w>
       <w>firebase</w>
+      <w>zxing</w>
     </words>
   </dictionary>
 </component>

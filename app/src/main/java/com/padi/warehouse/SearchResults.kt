@@ -3,10 +3,9 @@ package com.padi.warehouse
 import android.app.Activity
 import android.app.SearchManager
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import android.util.Log
 import com.padi.warehouse.item.Item
 import com.padi.warehouse.item.ItemAdapter
 import com.padi.warehouse.item.ItemDetails
@@ -31,7 +30,6 @@ class SearchResults : AppCompatActivity() {
     }
 
     private fun searchItems(query: String) {
-        Log.d(TAG, "Search for query: $query")
         mQuery = query
         mResults = items.filter {
             it.name!!.contains(query, true)
@@ -53,25 +51,19 @@ class SearchResults : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == RC.ITEM.code) {
-                Log.d(TAG, "Filter again after search results item changes.")
-                mResults = items.filter {
-                    it.name!!.contains(mQuery, true)
-                }
-                val itemViewAdapter = ItemAdapter(mResults) { itm: Item -> itemClicked(itm) }
-                rvResults.adapter = itemViewAdapter
-                rvResults.adapter?.notifyDataSetChanged()
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK && requestCode == RC.ITEM.code) {
+            mResults = items.filter {
+                it.name!!.contains(mQuery, true)
             }
+            val itemViewAdapter = ItemAdapter(mResults) { itm: Item -> itemClicked(itm) }
+            rvResults.adapter = itemViewAdapter
+            rvResults.adapter?.notifyDataSetChanged()
         }
     }
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    companion object {
-        private const val TAG = "SearchResults"
     }
 }

@@ -11,15 +11,15 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.SearchView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         itemsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
+                // Not used
             }
 
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -94,9 +95,11 @@ class MainActivity : AppCompatActivity() {
 
         itemsRef.orderByChild("exp_date").addChildEventListener(object : ChildEventListener {
             override fun onCancelled(dataSnapshot: DatabaseError) {
+                // Not used
             }
 
             override fun onChildMoved(dataSnapshot: DataSnapshot, prevChildKey: String?) {
+                // Not used
             }
 
             override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
@@ -196,12 +199,11 @@ class MainActivity : AppCompatActivity() {
 
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-                val version = JSONArray(response).getJSONObject(0).getJSONObject("apkData").getString("versionName")
-                if (packageManager.getPackageInfo(packageName, 0).versionName != version) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                        downloadNewVersion()
-                    }
+                val version = Version(JSONArray(response).getJSONObject(0).getJSONObject("apkData").getString("versionName"))
+                val appVersion = Version(packageManager.getPackageInfo(packageName, 0).versionName)
+                if (version.isGreater(appVersion) && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                        ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    downloadNewVersion()
                 }
             }
         } catch (e: Exception) {
@@ -268,7 +270,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, ItemDetails::class.java)
         val bundle = Bundle()
         bundle.putParcelable(MSG.ITEM.message, itm)
-        intent.putExtras(bundle)
+        intent.putExtra(MSG.ITEM.message, itm)
         startActivityForResult(intent, RC.ITEM.code)
     }
 
@@ -355,9 +357,6 @@ class MainActivity : AppCompatActivity() {
                         items.sortByDescending { it.box }
                     }
                 }
-            }
-
-            else -> {
             }
         }
         rvItems.adapter?.notifyDataSetChanged()

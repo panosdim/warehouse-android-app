@@ -6,22 +6,26 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.text.InputFilter
-import android.util.Log
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ImageSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.integration.android.IntentIntegrator
+import com.google.zxing.integration.android.IntentResult
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.padi.warehouse.*
 import com.padi.warehouse.R.layout.activity_item_details
@@ -36,21 +40,19 @@ import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import javax.net.ssl.HttpsURLConnection
+import kotlin.math.roundToInt
 
 
 class ItemDetails : AppCompatActivity() {
     private var item = Item(name = "", exp_date = "", amount = "", box = "")
     private val bundle: Bundle? by lazy { intent.extras }
     private lateinit var datePickerDialog: DatePickerDialog
-    private lateinit var mCalendar: Calendar
     private lateinit var mSnackbar: Snackbar
-
-    @SuppressLint("SimpleDateFormat")
-    private val mDateFormatter = SimpleDateFormat("yyyy-MM-dd")
+    private val mDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,43 +65,40 @@ class ItemDetails : AppCompatActivity() {
             item = bundle!!.getParcelable<Parcelable>(MSG.ITEM.message) as Item
         }
 
-        tv_name.setOnTouchListener(View.OnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_UP) {
-                if (event.rawX >= (tv_name.right - tv_name.compoundDrawables[DRAWABLE.RIGHT.index].bounds.width())) {
-                    // Initiate scan with zxing custom scan activity
-                    IntentIntegrator(this@ItemDetails).setCaptureActivity(BarcodeScan::class.java).initiateScan()
-                    return@OnTouchListener true
-                }
+        tv_product_name.setOnTouchListener(View.OnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP && event.rawX >= (tv_product_name.right - tv_product_name.compoundDrawables[DRAWABLE.RIGHT.index].bounds.width())) {
+                // Initiate scan with zxing custom scan activity
+                IntentIntegrator(this@ItemDetails).setCaptureActivity(BarcodeScan::class.java).initiateScan()
+                return@OnTouchListener true
             }
             false
         })
 
         tv_exp_date.setOnTouchListener(View.OnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_UP) {
-                if (event.rawX >= (tv_exp_date.right - tv_exp_date.compoundDrawables[DRAWABLE.RIGHT.index].bounds.width())) {
-                    // Use the date from the TextView
-                    mCalendar = Calendar.getInstance()
-                    try {
-                        val date = mDateFormatter.parse(tv_exp_date.text.toString())
-                        mCalendar.time = date
-                    } catch (e: ParseException) {
-                        mCalendar = Calendar.getInstance()
-                    }
-
-                    val cYear = mCalendar.get(Calendar.YEAR)
-                    val cMonth = mCalendar.get(Calendar.MONTH)
-                    val cDay = mCalendar.get(Calendar.DAY_OF_MONTH)
-
-                    // date picker dialog
-                    datePickerDialog = DatePickerDialog(this@ItemDetails,
-                            DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                                // set day of month , month and year value in the edit text
-                                mCalendar.set(year, month, dayOfMonth, 0, 0)
-                                tv_exp_date.setText(mDateFormatter.format(mCalendar.time))
-                            }, cYear, cMonth, cDay)
-                    datePickerDialog.show()
-                    return@OnTouchListener true
+            if (event.action == MotionEvent.ACTION_UP && event.rawX >= (tv_exp_date.right - tv_exp_date.compoundDrawables[DRAWABLE.RIGHT.index].bounds.width())) {
+                // Use the date from the TextView
+                val date: LocalDate = try {
+                    LocalDate.parse(tv_exp_date.text.toString())
+                } catch (ex: DateTimeParseException) {
+                    LocalDate.now()
                 }
+
+                val cYear = date.year
+                val cMonth = date.monthValue
+                val cDay = date.dayOfMonth
+
+                // date picker dialog
+                datePickerDialog = DatePickerDialog(
+                        this@ItemDetails,
+                        DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                            // set day of month , month and year value in the edit text
+                            val newDate = LocalDate.of(year, month, dayOfMonth)
+                            tv_exp_date.setText(newDate.format(mDateFormatter))
+                        }, cYear, cMonth, cDay
+                )
+                datePickerDialog.show()
+
+                return@OnTouchListener true
             }
             false
         })
@@ -112,62 +111,73 @@ class ItemDetails : AppCompatActivity() {
 
         tv_amount.setText(item.amount)
         tv_box.setText(item.box)
-        tv_name.setText(item.name)
+        tv_product_name.setText(item.name)
         tv_exp_date.setText(item.exp_date)
 
-        // Set Strict check for Date Formatter
-        mDateFormatter.isLenient = false
+        val barcodeDrawable = getDrawable(R.drawable.barcode)
+        var pixelDrawableSize = (tvBarcodeHint.lineHeight * 1.0).roundToInt().toInt()
+        barcodeDrawable.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize);
+
+        val ssbBarcode = SpannableStringBuilder(getString(R.string.barcode_hint))
+        ssbBarcode.setSpan(ImageSpan(barcodeDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        tvBarcodeHint.setText(ssbBarcode, TextView.BufferType.SPANNABLE);
+
+        val dateDrawable = getDrawable(R.drawable.calendar)
+        pixelDrawableSize = (tvDateHint.lineHeight * 1.0).roundToInt().toInt()
+        dateDrawable.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize);
+
+        val ssbDate = SpannableStringBuilder(getString(R.string.date_hint))
+        ssbDate.setSpan(ImageSpan(dateDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        tvDateHint.setText(ssbDate, TextView.BufferType.SPANNABLE);
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         // We will get scan results here
         mSnackbar = Snackbar.make(llvDetails, "Searching for product name in online database.", Snackbar.LENGTH_LONG)
         mSnackbar.show()
         val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-        if (result != null) {
-            if (result.contents == null) {
-                Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show()
-            } else {
-                // Search for product description from barcode in Firebase
-                val myRef = database.getReference("barcodes").child(result.contents)
-                myRef.addListenerForSingleValueEvent(object: ValueEventListener {
-                    override fun onCancelled(p0: DatabaseError) {
-                    }
+        if (result != null && result.contents == null) {
+            Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show()
+        } else {
+            searchForProduct(result)
+        }
+    }
 
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if (snapshot.value != null)
-                        {
-                            Log.d(TAG, "Firebase Result: ${snapshot.value}")
-                            tv_name.setText(snapshot.value as String)
+    private fun searchForProduct(result: IntentResult) {
+        // Search for product description from barcode in Firebase
+        val myRef = database.getReference("barcodes").child(result.contents)
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                // Not used
+            }
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.value != null) {
+                    tv_product_name.setText(snapshot.value as String)
+                    mSnackbar.dismiss()
+                } else {
+                    // Search for product description in i520 service
+                    val product = GlobalScope.async(IO) { findProductDescription(result.contents) }
+                    runBlocking {
+                        val prod = product.await()
+                        if (prod.isNotEmpty()) {
                             mSnackbar.dismiss()
-                        } else {
-                            // Search for product description in i520 service
-                            val product = GlobalScope.async(IO) { findProductDescription(result.contents) }
-                            runBlocking {
-                                val prod = product.await()
-                                Log.d(TAG, "Find product: $prod")
-                                if (prod.isNotEmpty()) {
-                                    mSnackbar.dismiss()
-                                    val res = JSONObject(prod)
-                                    if (res.getBoolean("found")) {
-                                        tv_name.setText(res.getString("description"))
-                                        // Store description in database
-                                        val barcodeRef = database.getReference("barcodes")
-                                        barcodeRef.child(result.contents).setValue(res.getString("description"))
-                                    } else {
-                                        // Show dialogue to add description when product not found
-                                        showAddDescriptionDialogue(result.contents)
-                                    }
-                                }
+                            val res = JSONObject(prod)
+                            if (res.getBoolean("found")) {
+                                tv_product_name.setText(res.getString("description"))
+                                // Store description in database
+                                val barcodeRef = database.getReference("barcodes")
+                                barcodeRef.child(result.contents).setValue(res.getString("description"))
+                            } else {
+                                // Show dialogue to add description when product not found
+                                showAddDescriptionDialogue(result.contents)
                             }
                         }
                     }
-                })
+                }
             }
-        } else {
-            // This is important, otherwise the result will not be passed to the fragment
-            super.onActivityResult(requestCode, resultCode, data)
-        }
+        })
     }
 
     private fun findProductDescription(barcode: String): String {
@@ -226,7 +236,7 @@ class ItemDetails : AppCompatActivity() {
                     // Save to Firebase
                     val myRef = database.getReference("barcodes")
                     myRef.child(result).setValue(dialogView.tv_prod_desc.text.toString())
-                    tv_name.setText(dialogView.tv_prod_desc.text.toString())
+                    tv_product_name.setText(dialogView.tv_prod_desc.text.toString())
                 }
                 .setNegativeButton("Cancel") { dialog, _ ->
                     // Do nothing
@@ -237,13 +247,13 @@ class ItemDetails : AppCompatActivity() {
 
     private fun validateInputs() {
         // Reset errors.
-        tv_name.error = null
+        tv_product_name.error = null
         tv_exp_date.error = null
         tv_amount.error = null
         tv_box.error = null
 
         // Store values.
-        val name = tv_name.text.toString()
+        val name = tv_product_name.text.toString()
         val expDate = tv_exp_date.text.toString()
         val amount = tv_amount.text.toString()
         val box = tv_box.text.toString()
@@ -253,8 +263,8 @@ class ItemDetails : AppCompatActivity() {
 
         // Check for a valid name.
         if (name.isEmpty()) {
-            tv_name.error = getString(R.string.error_field_required)
-            focusView = tv_name
+            tv_product_name.error = getString(R.string.error_field_required)
+            focusView = tv_product_name
             cancel = true
         }
 
@@ -262,7 +272,7 @@ class ItemDetails : AppCompatActivity() {
         if (expDate.isNotEmpty()) {
             try {
                 mDateFormatter.parse(expDate)
-            } catch (e: ParseException) {
+            } catch (e: DateTimeParseException) {
                 tv_exp_date.error = getString(R.string.invalidDate)
                 focusView = tv_exp_date
                 cancel = true
@@ -359,9 +369,5 @@ class ItemDetails : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    companion object {
-        private const val TAG = "ItemDetails"
     }
 }

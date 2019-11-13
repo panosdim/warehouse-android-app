@@ -3,7 +3,7 @@
     <string name="logout">Logout</string>
     <string name="save">Save</string>
     <string name="delete">Delete</string>
-    <string name="name">Name</string>
+    <string name="product_name">Product Name</string>
     <string name="exp_date">Expiration Date</string>
     <string name="amount">Amount</string>
     <string name="box">Box</string>
@@ -23,4 +23,7 @@
     <string name="sort">Sort</string>
     <string name="channel_name">warehouse-channel</string>
     <string name="channel_description">Expired Items Channel</string>
+    <string name="hints">Hints</string>
+    <string name="date_hint">By pressing the icon i it opens the date selection dialog.</string>
+    <string name="barcode_hint">By pressing the icon i you can scan a bar code and find the product name automatically.</string>
 </resources>
