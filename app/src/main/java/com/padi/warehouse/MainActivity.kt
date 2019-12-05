@@ -18,7 +18,6 @@ import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -241,25 +240,13 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    val apk = File(downloads, fileName)
-                    val apkUri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", apk)
-
-                    val intent = Intent(Intent.ACTION_INSTALL_PACKAGE)
-                    intent.data = apkUri
-                    intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    startActivity(intent)
-                } else {
-                    val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    val apk = File(downloads, fileName)
-                    val apkUri = Uri.fromFile(apk)
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(intent)
-                }
-
+                val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val apk = File(downloads, fileName)
+                val apkUri = Uri.fromFile(apk)
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
             }
         } catch (e: Exception) {
             e.printStackTrace()
