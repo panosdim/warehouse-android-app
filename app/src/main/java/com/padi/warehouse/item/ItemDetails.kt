@@ -84,7 +84,7 @@ class ItemDetails : AppCompatActivity() {
                 }
 
                 val cYear = date.year
-                val cMonth = date.monthValue
+                val cMonth = date.monthValue - 1
                 val cDay = date.dayOfMonth
 
                 // date picker dialog
@@ -92,7 +92,7 @@ class ItemDetails : AppCompatActivity() {
                         this@ItemDetails,
                         DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
                             // set day of month , month and year value in the edit text
-                            val newDate = LocalDate.of(year, month, dayOfMonth)
+                            val newDate = LocalDate.of(year, month + 1, dayOfMonth)
                             tv_exp_date.setText(newDate.format(mDateFormatter))
                         }, cYear, cMonth, cDay
                 )
@@ -115,20 +115,20 @@ class ItemDetails : AppCompatActivity() {
         tv_exp_date.setText(item.exp_date)
 
         val barcodeDrawable = getDrawable(R.drawable.barcode)
-        var pixelDrawableSize = (tvBarcodeHint.lineHeight * 1.0).roundToInt().toInt()
-        barcodeDrawable.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize);
+        var pixelDrawableSize = (tvBarcodeHint.lineHeight * 1.0).roundToInt()
+        barcodeDrawable!!.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
 
         val ssbBarcode = SpannableStringBuilder(getString(R.string.barcode_hint))
-        ssbBarcode.setSpan(ImageSpan(barcodeDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        tvBarcodeHint.setText(ssbBarcode, TextView.BufferType.SPANNABLE);
+        ssbBarcode.setSpan(ImageSpan(barcodeDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        tvBarcodeHint.setText(ssbBarcode, TextView.BufferType.SPANNABLE)
 
         val dateDrawable = getDrawable(R.drawable.calendar)
-        pixelDrawableSize = (tvDateHint.lineHeight * 1.0).roundToInt().toInt()
-        dateDrawable.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize);
+        pixelDrawableSize = (tvDateHint.lineHeight * 1.0).roundToInt()
+        dateDrawable!!.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
 
         val ssbDate = SpannableStringBuilder(getString(R.string.date_hint))
-        ssbDate.setSpan(ImageSpan(dateDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        tvDateHint.setText(ssbDate, TextView.BufferType.SPANNABLE);
+        ssbDate.setSpan(ImageSpan(dateDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        tvDateHint.setText(ssbDate, TextView.BufferType.SPANNABLE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

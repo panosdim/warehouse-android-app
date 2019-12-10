@@ -1,11 +1,14 @@
 package com.padi.warehouse
 
 import android.Manifest
+import android.app.DownloadManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.SearchManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -32,11 +35,11 @@ import com.padi.warehouse.item.Item
 import com.padi.warehouse.item.ItemAdapter
 import com.padi.warehouse.item.ItemDetails
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.io.BufferedReader
-import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -44,7 +47,8 @@ import javax.net.ssl.HttpsURLConnection
 
 
 class MainActivity : AppCompatActivity() {
-    private val mExpDateAsc = Comparator<Item> { p1, p2 ->
+    private lateinit var onComplete: BroadcastReceiver
+    private val expDateAsc = Comparator<Item> { p1, p2 ->
         when {
             p1.exp_date.isNullOrEmpty() -> 1
             p2.exp_date.isNullOrEmpty() -> -1
@@ -54,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val mExpDateDesc = Comparator<Item> { p1, p2 ->
+    private val expDateDesc = Comparator<Item> { p1, p2 ->
         when {
             p1.exp_date.isNullOrEmpty() -> -1
             p2.exp_date.isNullOrEmpty() -> 1
@@ -63,6 +67,8 @@ class MainActivity : AppCompatActivity() {
             else -> -1
         }
     }
+    private var refId: Long = -1
+    private lateinit var manager: DownloadManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,7 +144,6 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, RC.ITEM.code)
         }
 
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
@@ -155,11 +160,30 @@ class MainActivity : AppCompatActivity() {
         // Then enqueue the recurring task:
         WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork("itemExpired", ExistingPeriodicWorkPolicy.KEEP, itemExpiredWork)
 
-        GlobalScope.launch {
-            checkForNewVersion()
+        manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            checkForNewVersion()
         }
+
+        onComplete = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val referenceId = intent!!.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (referenceId != -1L && referenceId == refId) {
+                    val apkUri = manager.getUriForDownloadedFile(refId)
+                    val installIntent = Intent(Intent.ACTION_VIEW)
+                    installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive")
+                    installIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    startActivity(installIntent)
+                }
+
+            }
+        }
+
+        registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
     }
+
 
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -198,9 +222,9 @@ class MainActivity : AppCompatActivity() {
 
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-                val version = Version(JSONArray(response).getJSONObject(0).getJSONObject("apkData").getString("versionName"))
-                val appVersion = Version(packageManager.getPackageInfo(packageName, 0).versionName)
-                if (version.isGreater(appVersion) && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                val version = JSONArray(response).getJSONObject(0).getJSONObject("apkData").getLong("versionCode")
+                val appVersion = packageManager.getPackageInfo(packageName, 0).longVersionCode
+                if (version > appVersion && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                         ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     downloadNewVersion()
                 }
@@ -211,46 +235,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun downloadNewVersion() {
-        val url: URL
-        try {
-
-            var destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).canonicalPath + "/"
-            val fileName = "Warehouse.apk"
-            destination += fileName
-
-            //Delete update file if exists
-            val file = File(destination)
-            if (file.exists())
-                file.delete()
-
-            url = URL("https://warehouse.cc.nf/api/v1/app-release.apk")
-
-            val conn = url.openConnection() as HttpURLConnection
-
-            conn.readTimeout = 15000
-            conn.connectTimeout = 15000
-            conn.requestMethod = "GET"
-
-            val responseCode = conn.responseCode
-
-            if (responseCode == HttpsURLConnection.HTTP_OK) {
-                conn.inputStream.use { input ->
-                    File(destination).outputStream().use { fileOut ->
-                        input.copyTo(fileOut)
-                    }
-                }
-
-                val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                val apk = File(downloads, fileName)
-                val apkUri = Uri.fromFile(apk)
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val request = DownloadManager.Request(Uri.parse("https://warehouse.cc.nf/api/v1/app-release.apk"))
+        request.setDescription("Downloading new version of Warehouse.")
+        request.setTitle("New Warehouse Version")
+        request.allowScanningByMediaScanner()
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Warehouse.apk")
+        refId = manager.enqueue(request)
     }
 
     private fun itemClicked(itm: Item) {
@@ -263,6 +254,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         items.clear()
+        unregisterReceiver(onComplete)
         super.onDestroy()
     }
 
@@ -327,10 +319,10 @@ class MainActivity : AppCompatActivity() {
             R.id.rbExpDate -> {
                 when (rgDirection.checkedRadioButtonId) {
                     R.id.rbAscending -> {
-                        items.sortWith(mExpDateAsc)
+                        items.sortWith(expDateAsc)
                     }
                     R.id.rbDescending -> {
-                        items.sortWith(mExpDateDesc)
+                        items.sortWith(expDateDesc)
                     }
                 }
             }

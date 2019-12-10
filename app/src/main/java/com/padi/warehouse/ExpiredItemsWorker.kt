@@ -63,10 +63,6 @@ class ExpiredItemsWorker(context: Context, params: WorkerParameters)
 
         // Indicate success or failure with your return value:
         return Result.success()
-
-        // (Returning Result.retry() tells WorkManager to try this task again
-        // later; Result.failure() says not to try again.)
-
     }
 
 }
