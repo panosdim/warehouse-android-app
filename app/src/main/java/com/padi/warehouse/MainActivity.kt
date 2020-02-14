@@ -21,6 +21,7 @@ import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -223,7 +224,12 @@ class MainActivity : AppCompatActivity() {
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                 val version = JSONArray(response).getJSONObject(0).getJSONObject("apkData").getLong("versionCode")
-                val appVersion = packageManager.getPackageInfo(packageName, 0).longVersionCode
+                val appVersion = PackageInfoCompat.getLongVersionCode(
+                        packageManager.getPackageInfo(
+                                packageName,
+                                0
+                        )
+                )
                 if (version > appVersion && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                         ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     downloadNewVersion()
