@@ -4,14 +4,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    signingConfigs {
-        release {
-            storeFile file('C:\\Users\\padi\\android.jks')
-            storePassword 'netrino1!'
-            keyAlias = 'warehouse'
-            keyPassword 'netrino1!'
-        }
-    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.padi.warehouse"
@@ -20,7 +12,6 @@ android {
         versionCode 3
         versionName '1.8'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        signingConfig signingConfigs.release
     }
     buildTypes {
         release {
