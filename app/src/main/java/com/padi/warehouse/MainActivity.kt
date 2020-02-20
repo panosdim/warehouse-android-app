@@ -244,7 +244,6 @@ class MainActivity : AppCompatActivity() {
         val request = DownloadManager.Request(Uri.parse("https://warehouse.cc.nf/api/v1/app-release.apk"))
         request.setDescription("Downloading new version of Warehouse.")
         request.setTitle("New Warehouse Version")
-        request.allowScanningByMediaScanner()
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Warehouse.apk")
         refId = manager.enqueue(request)
