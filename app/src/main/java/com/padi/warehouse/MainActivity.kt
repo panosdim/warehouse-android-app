@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-                val item = dataSnapshot.getValue<Item>(Item::class.java)
+                val item = dataSnapshot.getValue(Item::class.java)
                 item?.id = dataSnapshot.key
                 val index = items.indexOfFirst { itm -> itm.id == item!!.id }
                 items[index] = item!!
@@ -117,14 +117,14 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-                val item = dataSnapshot.getValue<Item>(Item::class.java)
+                val item = dataSnapshot.getValue(Item::class.java)
                 item?.id = dataSnapshot.key
                 items.remove(item)
                 rvItems.adapter?.notifyDataSetChanged()
             }
 
             override fun onChildAdded(dataSnapshot: DataSnapshot, prevChildKey: String?) {
-                val item = dataSnapshot.getValue<Item>(Item::class.java)
+                val item = dataSnapshot.getValue(Item::class.java)
                 item?.id = dataSnapshot.key
                 items.add(item!!)
                 sortItems()

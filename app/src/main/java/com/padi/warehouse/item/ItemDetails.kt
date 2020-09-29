@@ -18,6 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -65,7 +66,8 @@ class ItemDetails : AppCompatActivity() {
             item = bundle!!.getParcelable<Parcelable>(MSG.ITEM.message) as Item
         }
 
-        tv_product_name.setOnTouchListener(View.OnTouchListener { _, event ->
+        tv_product_name.setOnTouchListener(View.OnTouchListener { v, event ->
+            v.performClick()
             if (event.action == MotionEvent.ACTION_UP && event.rawX >= (tv_product_name.right - tv_product_name.compoundDrawables[DRAWABLE.RIGHT.index].bounds.width())) {
                 // Initiate scan with zxing custom scan activity
                 IntentIntegrator(this@ItemDetails).setCaptureActivity(BarcodeScan::class.java).initiateScan()
@@ -74,7 +76,8 @@ class ItemDetails : AppCompatActivity() {
             false
         })
 
-        tv_exp_date.setOnTouchListener(View.OnTouchListener { _, event ->
+        tv_exp_date.setOnTouchListener(View.OnTouchListener { v, event ->
+            v.performClick()
             if (event.action == MotionEvent.ACTION_UP && event.rawX >= (tv_exp_date.right - tv_exp_date.compoundDrawables[DRAWABLE.RIGHT.index].bounds.width())) {
                 // Use the date from the TextView
                 val date: LocalDate = try {
@@ -90,7 +93,7 @@ class ItemDetails : AppCompatActivity() {
                 // date picker dialog
                 datePickerDialog = DatePickerDialog(
                         this@ItemDetails,
-                        DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                        { _, year, month, dayOfMonth ->
                             // set day of month , month and year value in the edit text
                             val newDate = LocalDate.of(year, month + 1, dayOfMonth)
                             tv_exp_date.setText(newDate.format(mDateFormatter))
@@ -114,7 +117,7 @@ class ItemDetails : AppCompatActivity() {
         tv_product_name.setText(item.name)
         tv_exp_date.setText(item.exp_date)
 
-        val barcodeDrawable = getDrawable(R.drawable.barcode)
+        val barcodeDrawable = ContextCompat.getDrawable(this, R.drawable.barcode)
         var pixelDrawableSize = (tvBarcodeHint.lineHeight * 1.0).roundToInt()
         barcodeDrawable!!.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
 
@@ -122,7 +125,7 @@ class ItemDetails : AppCompatActivity() {
         ssbBarcode.setSpan(ImageSpan(barcodeDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         tvBarcodeHint.setText(ssbBarcode, TextView.BufferType.SPANNABLE)
 
-        val dateDrawable = getDrawable(R.drawable.calendar)
+        val dateDrawable = ContextCompat.getDrawable(this, R.drawable.calendar)
         pixelDrawableSize = (tvDateHint.lineHeight * 1.0).roundToInt()
         dateDrawable!!.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
 

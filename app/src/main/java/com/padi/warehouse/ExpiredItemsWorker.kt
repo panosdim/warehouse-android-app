@@ -45,7 +45,7 @@ class ExpiredItemsWorker(context: Context, params: WorkerParameters)
                 val mDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 val today = now()
                 for (itemSnapshot in dataSnapshot.children) {
-                    val item = itemSnapshot.getValue<Item>(Item::class.java)
+                    val item = itemSnapshot.getValue(Item::class.java)
                     if (item!!.exp_date!!.isNotEmpty()) {
                         val date = LocalDate.parse(item.exp_date, mDateFormatter)
 
