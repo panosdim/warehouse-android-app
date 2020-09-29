@@ -39,7 +39,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.json.JSONArray
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.net.HttpURLConnection
 import java.net.URL
@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity() {
 
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-                val version = JSONArray(response).getJSONObject(0).getJSONObject("apkData").getLong("versionCode")
+                val version = JSONObject(response).getLong("versionCode")
                 val appVersion = PackageInfoCompat.getLongVersionCode(
                         packageManager.getPackageInfo(
                                 packageName,

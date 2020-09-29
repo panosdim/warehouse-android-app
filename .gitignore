@@ -11,3 +11,5 @@
 .externalNativeBuild
 app/release/output.json
 app/release/Warehouse-1.0.apk
+/app/release/app-release.apk
+/app/release/output-metadata.json
