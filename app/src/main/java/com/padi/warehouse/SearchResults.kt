@@ -1,9 +1,10 @@
 package com.padi.warehouse
 
-import android.app.Activity
 import android.app.SearchManager
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.padi.warehouse.item.Item
@@ -14,6 +15,12 @@ import kotlinx.android.synthetic.main.activity_search_results.*
 class SearchResults : AppCompatActivity() {
     private lateinit var mResults: List<Item>
     private lateinit var mQuery: String
+    private val searchLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { res ->
+        this.onSearchResult(res)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_results)
@@ -47,12 +54,11 @@ class SearchResults : AppCompatActivity() {
         val bundle = Bundle()
         bundle.putParcelable(MSG.ITEM.message, itm)
         intent.putExtras(bundle)
-        startActivityForResult(intent, RC.ITEM.code)
+        searchLauncher.launch(intent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK && requestCode == RC.ITEM.code) {
+    private fun onSearchResult(result: ActivityResult) {
+        if (result.resultCode == RESULT_OK) {
             mResults = items.filter {
                 it.name!!.contains(mQuery, true)
             }

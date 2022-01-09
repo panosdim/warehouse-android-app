@@ -11,7 +11,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.Menu
@@ -142,24 +141,37 @@ class MainActivity : AppCompatActivity() {
 
         fab.setOnClickListener {
             val intent = Intent(this, ItemDetails::class.java)
-            startActivityForResult(intent, RC.ITEM.code)
+            startActivity(intent)
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
 
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    RC.PERMISSION_REQUEST.code)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                RC.PERMISSION_REQUEST.code
+            )
         }
 
         // Check for expired items
         val itemExpiredBuilder =
-                PeriodicWorkRequestBuilder<ExpiredItemsWorker>(30, TimeUnit.DAYS)
+            PeriodicWorkRequestBuilder<ExpiredItemsWorker>(30, TimeUnit.DAYS)
 
         val itemExpiredWork = itemExpiredBuilder.build()
         // Then enqueue the recurring task:
-        WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork("itemExpired", ExistingPeriodicWorkPolicy.KEEP, itemExpiredWork)
+        WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+            "itemExpired",
+            ExistingPeriodicWorkPolicy.KEEP,
+            itemExpiredWork
+        )
 
         manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
@@ -175,7 +187,8 @@ class MainActivity : AppCompatActivity() {
                     val apkUri = manager.getUriForDownloadedFile(refId)
                     val installIntent = Intent(Intent.ACTION_VIEW)
                     installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive")
-                    installIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    installIntent.flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
                     startActivity(installIntent)
                 }
 
@@ -189,19 +202,17 @@ class MainActivity : AppCompatActivity() {
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channel_name)
-            val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val name = getString(R.string.channel_name)
+        val descriptionText = getString(R.string.channel_description)
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
 
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: NotificationManager =
-                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            description = descriptionText
         }
+        // Register the channel with the system
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     private fun checkForNewVersion() {
@@ -225,13 +236,20 @@ class MainActivity : AppCompatActivity() {
                 response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                 val version = JSONObject(response).getLong("versionCode")
                 val appVersion = PackageInfoCompat.getLongVersionCode(
-                        packageManager.getPackageInfo(
-                                packageName,
-                                0
-                        )
+                    packageManager.getPackageInfo(
+                        packageName,
+                        0
+                    )
                 )
-                if (version > appVersion && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                if (version > appVersion && ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
                     downloadNewVersion()
                 }
             }
@@ -241,7 +259,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun downloadNewVersion() {
-        val request = DownloadManager.Request(Uri.parse("https://warehouse.cc.nf/api/v1/app-release.apk"))
+        val request =
+            DownloadManager.Request(Uri.parse("https://warehouse.cc.nf/api/v1/app-release.apk"))
         request.setDescription("Downloading new version of Warehouse.")
         request.setTitle("New Warehouse Version")
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
@@ -254,7 +273,7 @@ class MainActivity : AppCompatActivity() {
         val bundle = Bundle()
         bundle.putParcelable(MSG.ITEM.message, itm)
         intent.putExtra(MSG.ITEM.message, itm)
-        startActivityForResult(intent, RC.ITEM.code)
+        startActivity(intent)
     }
 
     override fun onDestroy() {
@@ -288,17 +307,18 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_logout -> {
             AuthUI.getInstance()
-                    .signOut(this)
-                    .addOnCompleteListener {
-                        user = null
-                        val intent = Intent(this, Login::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                    }
+                .signOut(this)
+                .addOnCompleteListener {
+                    user = null
+                    val intent = Intent(this, Login::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                }
             true
         }
         R.id.action_sort -> {
-            sortItems.visibility = if (sortItems.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            sortItems.visibility =
+                if (sortItems.visibility == View.VISIBLE) View.GONE else View.VISIBLE
             true
         }
         else -> {

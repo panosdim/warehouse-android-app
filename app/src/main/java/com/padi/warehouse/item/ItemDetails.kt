@@ -25,9 +25,10 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
-import com.google.zxing.integration.android.IntentIntegrator
-import com.google.zxing.integration.android.IntentResult
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanIntentResult
+import com.journeyapps.barcodescanner.ScanOptions
 import com.padi.warehouse.*
 import com.padi.warehouse.R.layout.activity_item_details
 import kotlinx.android.synthetic.main.activity_item_details.*
@@ -54,6 +55,35 @@ class ItemDetails : AppCompatActivity() {
     private lateinit var datePickerDialog: DatePickerDialog
     private lateinit var mSnackbar: Snackbar
     private val mDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val scanOptions = ScanOptions()
+
+    private val barcodeLauncher = registerForActivityResult(
+        ScanContract()
+    ) { result: ScanIntentResult ->
+        if (result.contents == null) {
+            Toast.makeText(this@ItemDetails, "Cancelled", Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(
+                this@ItemDetails,
+                "Scanned: " + result.contents,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        // We will get scan results here
+        mSnackbar = Snackbar.make(
+            llvDetails,
+            "Searching for product name in online database.",
+            Snackbar.LENGTH_LONG
+        )
+        mSnackbar.show()
+        if (result.contents == null) {
+            Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show()
+        } else {
+            searchForProduct(result.contents)
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +100,8 @@ class ItemDetails : AppCompatActivity() {
             v.performClick()
             if (event.action == MotionEvent.ACTION_UP && event.rawX >= (tv_product_name.right - tv_product_name.compoundDrawables[DRAWABLE.RIGHT.index].bounds.width())) {
                 // Initiate scan with zxing custom scan activity
-                IntentIntegrator(this@ItemDetails).setCaptureActivity(BarcodeScan::class.java).initiateScan()
+                scanOptions.captureActivity = BarcodeScan::class.java
+                barcodeLauncher.launch(scanOptions)
                 return@OnTouchListener true
             }
             false
@@ -92,12 +123,12 @@ class ItemDetails : AppCompatActivity() {
 
                 // date picker dialog
                 datePickerDialog = DatePickerDialog(
-                        this@ItemDetails,
-                        { _, year, month, dayOfMonth ->
-                            // set day of month , month and year value in the edit text
-                            val newDate = LocalDate.of(year, month + 1, dayOfMonth)
-                            tv_exp_date.setText(newDate.format(mDateFormatter))
-                        }, cYear, cMonth, cDay
+                    this@ItemDetails,
+                    { _, year, month, dayOfMonth ->
+                        // set day of month , month and year value in the edit text
+                        val newDate = LocalDate.of(year, month + 1, dayOfMonth)
+                        tv_exp_date.setText(newDate.format(mDateFormatter))
+                    }, cYear, cMonth, cDay
                 )
                 datePickerDialog.show()
 
@@ -122,7 +153,12 @@ class ItemDetails : AppCompatActivity() {
         barcodeDrawable!!.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
 
         val ssbBarcode = SpannableStringBuilder(getString(R.string.barcode_hint))
-        ssbBarcode.setSpan(ImageSpan(barcodeDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        ssbBarcode.setSpan(
+            ImageSpan(barcodeDrawable, ImageSpan.ALIGN_BOTTOM),
+            21,
+            22,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
         tvBarcodeHint.setText(ssbBarcode, TextView.BufferType.SPANNABLE)
 
         val dateDrawable = ContextCompat.getDrawable(this, R.drawable.calendar)
@@ -130,26 +166,18 @@ class ItemDetails : AppCompatActivity() {
         dateDrawable!!.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
 
         val ssbDate = SpannableStringBuilder(getString(R.string.date_hint))
-        ssbDate.setSpan(ImageSpan(dateDrawable, ImageSpan.ALIGN_BOTTOM), 21, 22, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        ssbDate.setSpan(
+            ImageSpan(dateDrawable, ImageSpan.ALIGN_BOTTOM),
+            21,
+            22,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
         tvDateHint.setText(ssbDate, TextView.BufferType.SPANNABLE)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        // We will get scan results here
-        mSnackbar = Snackbar.make(llvDetails, "Searching for product name in online database.", Snackbar.LENGTH_LONG)
-        mSnackbar.show()
-        val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-        if (result != null && result.contents == null) {
-            Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show()
-        } else {
-            searchForProduct(result)
-        }
-    }
-
-    private fun searchForProduct(result: IntentResult) {
+    private fun searchForProduct(result: String) {
         // Search for product description from barcode in Firebase
-        val myRef = database.getReference("barcodes").child(result.contents)
+        val myRef = database.getReference("barcodes").child(result)
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 // Not used
@@ -161,7 +189,7 @@ class ItemDetails : AppCompatActivity() {
                     mSnackbar.dismiss()
                 } else {
                     // Search for product description in i520 service
-                    val product = GlobalScope.async(IO) { findProductDescription(result.contents) }
+                    val product = GlobalScope.async(IO) { findProductDescription(result) }
                     runBlocking {
                         val prod = product.await()
                         if (prod.isNotEmpty()) {
@@ -171,10 +199,11 @@ class ItemDetails : AppCompatActivity() {
                                 tv_product_name.setText(res.getString("description"))
                                 // Store description in database
                                 val barcodeRef = database.getReference("barcodes")
-                                barcodeRef.child(result.contents).setValue(res.getString("description"))
+                                barcodeRef.child(result)
+                                    .setValue(res.getString("description"))
                             } else {
                                 // Show dialogue to add description when product not found
-                                showAddDescriptionDialogue(result.contents)
+                                showAddDescriptionDialogue(result)
                             }
                         }
                     }
@@ -234,18 +263,18 @@ class ItemDetails : AppCompatActivity() {
         }
 
         builder.setTitle("Product Not Found")
-                .setView(dialogView)
-                .setPositiveButton("Save") { _, _ ->
-                    // Save to Firebase
-                    val myRef = database.getReference("barcodes")
-                    myRef.child(result).setValue(dialogView.tv_prod_desc.text.toString())
-                    tv_product_name.setText(dialogView.tv_prod_desc.text.toString())
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    // Do nothing
-                    dialog.dismiss()
-                }
-                .show()
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                // Save to Firebase
+                val myRef = database.getReference("barcodes")
+                myRef.child(result).setValue(dialogView.tv_prod_desc.text.toString())
+                tv_product_name.setText(dialogView.tv_prod_desc.text.toString())
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                // Do nothing
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun validateInputs() {
@@ -313,15 +342,19 @@ class ItemDetails : AppCompatActivity() {
                 val newItemRef = myRef.push()
                 newItemRef.setValue(item)
 
-                Toast.makeText(this, "Item Saved Successfully.",
-                        Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this, "Item Saved Successfully.",
+                    Toast.LENGTH_LONG
+                ).show()
             } else {
                 val myRef = database.getReference("items").child(user?.uid!!).child(item.id!!)
                 myRef.setValue(item)
                 myRef.child("id").removeValue()
 
-                Toast.makeText(this, "Item Updated Successfully.",
-                        Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this, "Item Updated Successfully.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
 
             val returnIntent = Intent()
@@ -348,8 +381,10 @@ class ItemDetails : AppCompatActivity() {
         R.id.food_delete -> {
             val myRef = database.getReference("items").child(user?.uid!!).child(item.id!!)
             myRef.removeValue()
-            Toast.makeText(this, "Item Deleted Successfully.",
-                    Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this, "Item Deleted Successfully.",
+                Toast.LENGTH_LONG
+            ).show()
             val returnIntent = Intent()
             setResult(Activity.RESULT_OK, returnIntent)
             finish()
