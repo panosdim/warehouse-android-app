@@ -11,34 +11,38 @@
     android:layout_marginBottom="8dp"
     android:gravity="start"
     android:orientation="vertical"
-    tools:context=".item.ItemDetails">
+    tools:context=".activities.ItemDetailsActivity">
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tlProductName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:endIconMode="custom"
+        app:endIconDrawable="@drawable/barcode"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_marginTop="4dp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tv_product_name"
+            android:id="@+id/tvProductName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableEnd="@drawable/barcode"
             android:hint="@string/product_name"
             android:inputType="text|textCapWords|textAutoComplete" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tlExpDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:endIconMode="custom"
+        app:endIconDrawable="@drawable/calendar"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_marginTop="4dp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tv_exp_date"
+            android:id="@+id/tvExpDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableEnd="@drawable/calendar"
             android:hint="@string/exp_date"
             android:inputType="date" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -46,11 +50,11 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_marginTop="4dp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tv_amount"
+            android:id="@+id/tvAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/amount"
@@ -60,11 +64,11 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_marginTop="4dp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tv_box"
+            android:id="@+id/tvBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/box"
@@ -73,7 +77,7 @@
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:cardCornerRadius="4dp"
         app:cardElevation="4dp"
@@ -83,7 +87,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView

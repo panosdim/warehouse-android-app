@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SearchResults">
+    tools:context=".activities.SearchResultsActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvResults"
@@ -15,5 +15,18 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     </androidx.recyclerview.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/txtEmptyResults"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:paddingVertical="8dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:text="@string/empty_results"
+        android:layout_marginTop="?attr/actionBarSize"
+        app:drawableTopCompat="@drawable/info" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

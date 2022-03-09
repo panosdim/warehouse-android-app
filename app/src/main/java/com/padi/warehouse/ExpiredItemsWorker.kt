@@ -10,31 +10,33 @@ import androidx.work.WorkerParameters
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.padi.warehouse.item.Item
+import com.padi.warehouse.activities.MainActivity
+import com.padi.warehouse.model.Item
 import java.time.LocalDate
 import java.time.LocalDate.now
 import java.time.format.DateTimeFormatter
 
-class ExpiredItemsWorker(context: Context, params: WorkerParameters)
-    : Worker(context, params) {
+class ExpiredItemsWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
 
     override fun doWork(): Result {
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, 0)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            applicationContext,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
         val mBuilder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_stock)
-                .setContentTitle("Expired Items")
-                .setContentText("Some items are expired in your warehouse")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
+            .setSmallIcon(R.drawable.ic_stock)
+            .setContentTitle("Expired Items")
+            .setContentText("Some items are expired in your warehouse")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
 
-        // Do the work here--in this case, compress the stored images.
-        // In this example no parameters are passed; the task is
-        // assumed to be "compress the whole library."
-        val itemsRef = database.getReference("items").child(user?.uid!!)
+        val itemsRef = database.getReference("items").child(user?.uid.toString())
 
         itemsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
@@ -42,12 +44,12 @@ class ExpiredItemsWorker(context: Context, params: WorkerParameters)
             }
 
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val mDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 val today = now()
                 for (itemSnapshot in dataSnapshot.children) {
                     val item = itemSnapshot.getValue(Item::class.java)
-                    if (item!!.exp_date!!.isNotEmpty()) {
-                        val date = LocalDate.parse(item.exp_date, mDateFormatter)
+                    if (!item?.exp_date.isNullOrEmpty()) {
+                        val date = LocalDate.parse(item?.exp_date, dateFormatter)
 
                         if (date.isBefore(today)) {
                             with(NotificationManagerCompat.from(applicationContext)) {

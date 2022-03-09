@@ -6,7 +6,9 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
@@ -14,12 +16,14 @@
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <application
-        android:allowBackup="false"
+        android:allowBackup="true"
+        android:fullBackupContent="true"
         android:icon="@mipmap/ic_stock"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_stock_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:ignore="DataExtractionRules">
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -35,35 +39,38 @@
             android:value="barcode" />
         <meta-data
             android:name="android.app.default_searchable"
-            android:value=".SearchResults" />
+            android:value=".activities.SearchResultsActivity" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".BarcodeScan"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Login"
+            android:name=".activities.BarcodeScanActivity"
             android:screenOrientation="portrait"
-            android:exported="true">
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".activities.LoginActivity"
+            android:screenOrientation="portrait"
+            android:exported="true"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".item.ItemDetails"
+            android:name=".activities.ItemDetailsActivity"
             android:label="@string/item_details_title"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".SearchResults"
+            android:name=".activities.SearchResultsActivity"
             android:label="@string/search_results"
             android:screenOrientation="portrait"
-            android:exported="false">
+            android:exported="false"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>

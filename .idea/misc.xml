@@ -3,8 +3,24 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/drawable/barcode.xml" value="0.192" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/drawable/calendar.xml" value="0.192" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/drawable/ic_search.xml" value="0.192" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/drawable/ic_sort.xml" value="0.192" />
         <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/drawable/ic_stock.xml" value="0.2703125" />
-        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/activity_main.xml" value="0.23777173913043478" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/drawable/info.xml" value="0.2125" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/drawable/logout.xml" value="0.192" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/drawable/sort.xml" value="0.2125" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/activity_barcode_scan.xml" value="0.24010416666666667" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/activity_item_details.xml" value="0.24010416666666667" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/activity_login.xml" value="0.2296195652173913" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/activity_main.xml" value="0.264" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/activity_search_results.xml" value="0.24010416666666667" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/add_product_description.xml" value="0.22604166666666667" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/custom_scanner.xml" value="0.1" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/dialog_items_sort.xml" value="0.24010416666666667" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/item_row.xml" value="0.264" />
+        <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/menu/food_details.xml" value="0.22604166666666667" />
       </map>
     </option>
   </component>

@@ -21,9 +21,12 @@
     <string name="descending">Descending</string>
     <string name="ascending">Ascending</string>
     <string name="sort">Sort</string>
-    <string name="channel_name">warehouse-channel</string>
-    <string name="channel_description">Expired Items Channel</string>
+    <string name="channel_name">Expired Items</string>
+    <string name="channel_description">Receive notifications for items that are expired.</string>
     <string name="hints">Hints</string>
     <string name="date_hint">By pressing the icon i it opens the date selection dialog.</string>
     <string name="barcode_hint">By pressing the icon i you can scan a bar code and find the product name automatically.</string>
+    <string name="add_new">Add New Item</string>
+    <string name="new_item">New Item</string>
+    <string name="empty_results">Nothing found</string>
 </resources>
