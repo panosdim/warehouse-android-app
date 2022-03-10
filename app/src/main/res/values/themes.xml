@@ -27,5 +27,7 @@
         <item name="colorOnSurfaceInverse">@color/md_theme_light_inverseOnSurface</item>
         <item name="colorSurfaceInverse">@color/md_theme_light_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_light_primaryInverse</item>
+        <item name="colorExpired">@color/theme_light_expired</item>
+        <item name="colorExpiresSoon">@color/theme_light_expires_soon</item>
     </style>
 </resources>

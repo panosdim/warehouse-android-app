@@ -55,11 +55,12 @@
     <color name="md_theme_dark_inversePrimary">#00668A</color>
     <color name="md_theme_dark_shadow">#000000</color>
     <color name="md_theme_dark_primaryInverse">#00668A</color>
-    <color name="yellow">#FFFF16</color>
-    <color name="red">#FF1654</color>
+    <color name="theme_light_expired">#b91646</color>
+    <color name="theme_dark_expired">#920023</color>
+    <color name="theme_light_expires_soon">#5c6300</color>
+    <color name="theme_dark_expires_soon">#c4d000</color>
     <color name="transparent_blue">#322100c8</color>
     <color name="zxingPrimary">#f44336</color>
     <color name="zxingPrimaryDark">#d32f2f</color>
     <color name="zxingAccent">#00c853</color>
-    <color name="white">#fff</color>
 </resources>

@@ -21,6 +21,8 @@
         <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/dialog_items_sort.xml" value="0.24010416666666667" />
         <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/layout/item_row.xml" value="0.264" />
         <entry key="..\:/GitHub Repos/Warehouse/warehouse-android-app/app/src/main/res/menu/food_details.xml" value="0.22604166666666667" />
+        <entry key="..\:/GitHub/warehouse-android-app/app/src/main/res/layout/activity_main.xml" value="0.3625" />
+        <entry key="..\:/GitHub/warehouse-android-app/app/src/main/res/layout/item_row.xml" value="0.25" />
       </map>
     </option>
   </component>
@@ -70,5 +72,5 @@
       </value>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK" />
 </project>

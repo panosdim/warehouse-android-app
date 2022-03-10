@@ -1,0 +1,4 @@
+<resources>
+    <attr name="colorExpired" format="color" />
+    <attr name="colorExpiresSoon" format="color" />
+</resources>

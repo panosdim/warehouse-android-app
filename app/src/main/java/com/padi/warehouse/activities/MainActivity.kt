@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -92,7 +91,6 @@ class MainActivity : AppCompatActivity() {
 
             override fun onChildChanged(dataSnapshot: DataSnapshot, prevChildKey: String?) {
                 val item = dataSnapshot.getValue(Item::class.java)
-                Log.d(TAG, item.toString())
                 if (item != null) {
                     item.id = dataSnapshot.key
                     val index = items.indexOfFirst { itm -> itm.id == item.id }
