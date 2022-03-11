@@ -2,8 +2,12 @@
     <string name="app_name">Warehouse</string>
     <string name="logout">Logout</string>
     <string name="save">Save</string>
+    <string name="update">Update</string>
     <string name="delete">Delete</string>
+    <string name="accept">Accept</string>
+    <string name="cancel">Cancel</string>
     <string name="product_name">Product Name</string>
+    <string name="product_not_found">Product Not Found</string>
     <string name="exp_date">Expiration Date</string>
     <string name="amount">Amount</string>
     <string name="amount_with_number">Amount: %1$s</string>
@@ -27,8 +31,16 @@
     <string name="channel_description">Receive notifications for items that are expired.</string>
     <string name="hints">Hints</string>
     <string name="date_hint">By pressing the icon i it opens the date selection dialog.</string>
+    <string name="amount_hint">By pressing the icon i or i you can decrease and increase the amount of the item. </string>
     <string name="barcode_hint">By pressing the icon i you can scan a bar code and find the product name automatically.</string>
     <string name="add_new">Add New Item</string>
     <string name="new_item">New Item</string>
     <string name="empty_results">Nothing found</string>
+    <string name="delete_item_title">Delete item?</string>
+    <string name="delete_item_supporting_text">If you delete the item you will not be able to recover it.</string>
+    <string name="chip_box_1">Box 1</string>
+    <string name="chip_box_2">Box 2</string>
+    <string name="chip_box_3">Box 3</string>
+    <string name="chip_box_4">Box 4</string>
+    <string name="_date_helper_text">Date format is YYYY-MM-DD or YYYY-MM</string>
 </resources>

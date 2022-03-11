@@ -8,10 +8,14 @@ import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
+import com.padi.warehouse.BuildConfig
 import com.padi.warehouse.R
 import com.padi.warehouse.user
 
 
+// There is a strange bug and Firebase Auth UI is working only in release variant.
+// In debug variant it is not calling the onSignInResult callback and keep showing the logging
+// screen. You have to close completely and reopen the app in order to be signed in.
 class LoginActivity : AppCompatActivity() {
     private val signInLauncher = registerForActivityResult(
         FirebaseAuthUIActivityResultContract()
@@ -36,7 +40,9 @@ class LoginActivity : AppCompatActivity() {
             // Create and launch sign-in intent
             val signInIntent = AuthUI.getInstance()
                 .createSignInIntentBuilder()
+                .setTheme(R.style.AppTheme)
                 .setAvailableProviders(providers)
+                .setIsSmartLockEnabled(!BuildConfig.DEBUG, true)
                 .setLogo(R.drawable.ic_stock)      // Set logo drawable
                 .build()
             signInLauncher.launch(signInIntent)
@@ -56,6 +62,7 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
+            finish()
         } else {
             // Sign in failed. If response is null the user canceled the
             // sign-in flow using the back button. Otherwise check

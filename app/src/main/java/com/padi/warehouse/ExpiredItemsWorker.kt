@@ -12,9 +12,9 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.padi.warehouse.activities.MainActivity
 import com.padi.warehouse.model.Item
+import com.padi.warehouse.utils.dateFormatter
 import java.time.LocalDate
 import java.time.LocalDate.now
-import java.time.format.DateTimeFormatter
 
 class ExpiredItemsWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
 
@@ -44,7 +44,6 @@ class ExpiredItemsWorker(context: Context, params: WorkerParameters) : Worker(co
             }
 
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 val today = now()
                 for (itemSnapshot in dataSnapshot.children) {
                     val item = itemSnapshot.getValue(Item::class.java)

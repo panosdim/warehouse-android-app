@@ -15,9 +15,11 @@ import com.padi.warehouse.CHANNEL_ID
 import com.padi.warehouse.R
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.DataOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.text.Normalizer
+import java.time.format.DateTimeFormatter
 import javax.net.ssl.HttpsURLConnection
 
 
@@ -28,6 +30,8 @@ fun CharSequence.unaccent(): String {
     val temp = Normalizer.normalize(this, Normalizer.Form.NFD)
     return REGEX_UNACCENT.replace(temp, "")
 }
+
+val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 fun checkForNewVersion(context: Context) {
     val url: URL
@@ -99,4 +103,38 @@ fun createNotificationChannel(context: Context) {
     val notificationManager: NotificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     notificationManager.createNotificationChannel(channel)
+}
+
+fun findProductDescription(barcode: String): String {
+    val url: URL
+    var response = ""
+    try {
+        val jsonParam = JSONObject()
+        jsonParam.put("barcode", barcode)
+        url = URL(BACKEND_URL + "barcode.php")
+
+        val conn = url.openConnection() as HttpURLConnection
+
+        conn.readTimeout = 15000
+        conn.connectTimeout = 15000
+        conn.requestMethod = "POST"
+        conn.doOutput = true
+
+        conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
+
+        val printout = DataOutputStream(conn.outputStream)
+        printout.write(jsonParam.toString().toByteArray(Charsets.UTF_8))
+        printout.flush()
+        printout.close()
+
+        val responseCode = conn.responseCode
+
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
+            response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
+    return response
 }

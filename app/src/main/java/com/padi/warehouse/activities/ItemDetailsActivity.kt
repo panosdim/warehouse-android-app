@@ -1,6 +1,5 @@
 package com.padi.warehouse.activities
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
@@ -10,15 +9,14 @@ import android.text.InputFilter
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
-import android.view.Menu
-import android.view.MenuItem
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.android.material.snackbar.Snackbar
+import androidx.core.view.isVisible
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -28,65 +26,45 @@ import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
-import com.padi.warehouse.MSG
-import com.padi.warehouse.R
-import com.padi.warehouse.database
+import com.padi.warehouse.*
 import com.padi.warehouse.databinding.ActivityItemDetailsBinding
 import com.padi.warehouse.databinding.AddProductDescriptionBinding
 import com.padi.warehouse.model.Item
-import com.padi.warehouse.user
 import com.padi.warehouse.utils.DecimalDigitsInputFilter
+import com.padi.warehouse.utils.dateFormatter
+import com.padi.warehouse.utils.findProductDescription
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.DataOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import javax.net.ssl.HttpsURLConnection
+import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 import kotlin.math.roundToInt
 
 
 class ItemDetailsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityItemDetailsBinding
-    private var item = Item(name = "", exp_date = "", amount = "", box = "")
+    private var item = Item(name = "", exp_date = "", amount = "1", box = "")
     private val bundle: Bundle? by lazy { intent.extras }
     private lateinit var datePickerDialog: DatePickerDialog
-    private lateinit var mSnackbar: Snackbar
-    private val mDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val scanOptions = ScanOptions()
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     private val barcodeLauncher = registerForActivityResult(
         ScanContract()
     ) { result: ScanIntentResult ->
-        if (result.contents == null) {
-            Toast.makeText(this@ItemDetailsActivity, "Cancelled", Toast.LENGTH_LONG).show()
-        } else {
+        if (result.contents != null) {
             Toast.makeText(
                 this@ItemDetailsActivity,
-                "Scanned: " + result.contents,
+                "Searching for product ${result.contents}.",
                 Toast.LENGTH_LONG
             ).show()
-        }
 
-        // We will get scan results here
-        mSnackbar = Snackbar.make(
-            binding.llvDetails,
-            "Searching for product name in online database.",
-            Snackbar.LENGTH_LONG
-        )
-        mSnackbar.show()
-        if (result.contents == null) {
-            Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show()
-        } else {
             searchForProduct(result.contents)
         }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,6 +78,13 @@ class ItemDetailsActivity : AppCompatActivity() {
 
         if (bundle != null) {
             item = bundle!!.getParcelable<Parcelable>(MSG.ITEM.message) as Item
+            binding.saveItem.isVisible = true
+            binding.saveItem.setText(R.string.update)
+            binding.deleteItem.isVisible = true
+        } else {
+            binding.saveItem.isVisible = true
+            binding.saveItem.setText(R.string.save)
+            binding.deleteItem.isVisible = false
         }
 
         binding.tlProductName.setEndIconOnClickListener {
@@ -126,10 +111,48 @@ class ItemDetailsActivity : AppCompatActivity() {
                 { _, year, month, dayOfMonth ->
                     // set day of month , month and year value in the edit text
                     val newDate = LocalDate.of(year, month + 1, dayOfMonth)
-                    binding.tvExpDate.setText(newDate.format(mDateFormatter))
+                    binding.tvExpDate.setText(newDate.format(dateFormatter))
                 }, cYear, cMonth, cDay
             )
             datePickerDialog.show()
+        }
+
+        binding.tlAmount.setStartIconOnClickListener {
+            if (!binding.tvAmount.text.isNullOrEmpty()) {
+                var amount = binding.tvAmount.text.toString().toInt()
+                if (amount > 1) {
+                    amount--
+                    binding.tvAmount.setText(amount.toString())
+                }
+            } else {
+                binding.tvAmount.setText("1")
+            }
+        }
+
+        binding.tlAmount.setEndIconOnClickListener {
+            if (!binding.tvAmount.text.isNullOrEmpty()) {
+                var amount = binding.tvAmount.text.toString().toInt()
+                amount++
+                binding.tvAmount.setText(amount.toString())
+            } else {
+                binding.tvAmount.setText("1")
+            }
+        }
+
+        binding.chipBox1.setOnClickListener {
+            binding.tvBox.setText("1")
+        }
+
+        binding.chipBox2.setOnClickListener {
+            binding.tvBox.setText("2")
+        }
+
+        binding.chipBox3.setOnClickListener {
+            binding.tvBox.setText("3")
+        }
+
+        binding.chipBox4.setOnClickListener {
+            binding.tvBox.setText("4")
         }
 
         // Set decimal filter to amount
@@ -168,11 +191,60 @@ class ItemDetailsActivity : AppCompatActivity() {
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         binding.tvDateHint.setText(ssbDate, TextView.BufferType.SPANNABLE)
+
+        val decreaseDrawable = ContextCompat.getDrawable(this, R.drawable.minus)
+        val increaseDrawable = ContextCompat.getDrawable(this, R.drawable.plus_box)
+        pixelDrawableSize = (binding.tvAmountHint.lineHeight * 1.0).roundToInt()
+        decreaseDrawable?.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
+        increaseDrawable?.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
+
+        val ssbAmount = SpannableStringBuilder(getString(R.string.amount_hint))
+        ssbAmount.setSpan(
+            decreaseDrawable?.let { ImageSpan(it, ImageSpan.ALIGN_BOTTOM) },
+            21,
+            22,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        ssbAmount.setSpan(
+            increaseDrawable?.let { ImageSpan(it, ImageSpan.ALIGN_BOTTOM) },
+            26,
+            27,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        binding.tvAmountHint.setText(ssbAmount, TextView.BufferType.SPANNABLE)
+
+        binding.saveItem.setOnClickListener {
+            validateInputs()
+        }
+
+        binding.deleteItem.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(resources.getString(R.string.delete_item_title))
+                .setMessage(resources.getString(R.string.delete_item_supporting_text))
+                .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setPositiveButton(resources.getString(R.string.accept)) { dialog, _ ->
+                    dialog.dismiss()
+                    val myRef =
+                        database.getReference("items").child(user?.uid.toString())
+                            .child(item.id.toString())
+                    myRef.removeValue()
+                    Toast.makeText(
+                        this, "Item Deleted Successfully.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    val returnIntent = Intent()
+                    setResult(Activity.RESULT_OK, returnIntent)
+                    finish()
+                }
+                .show()
+        }
     }
 
-    private fun searchForProduct(result: String) {
+    private fun searchForProduct(barcode: String) {
         // Search for product description from barcode in Firebase
-        val myRef = database.getReference("barcodes").child(result)
+        val myRef = database.getReference("barcodes").child(barcode)
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 // Not used
@@ -181,24 +253,23 @@ class ItemDetailsActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.value != null) {
                     binding.tvProductName.setText(snapshot.value as String)
-                    mSnackbar.dismiss()
                 } else {
                     // Search for product description in i520 service
-                    val product = GlobalScope.async(IO) { findProductDescription(result) }
+                    val product = scope.async(IO) { findProductDescription(barcode) }
                     runBlocking {
                         val prod = product.await()
+
                         if (prod.isNotEmpty()) {
-                            mSnackbar.dismiss()
                             val res = JSONObject(prod)
                             if (res.getBoolean("found")) {
                                 binding.tvProductName.setText(res.getString("description"))
                                 // Store description in database
                                 val barcodeRef = database.getReference("barcodes")
-                                barcodeRef.child(result)
+                                barcodeRef.child(barcode)
                                     .setValue(res.getString("description"))
                             } else {
                                 // Show dialogue to add description when product not found
-                                showAddDescriptionDialogue(result)
+                                showAddDescriptionDialogue(barcode)
                             }
                         }
                     }
@@ -207,44 +278,7 @@ class ItemDetailsActivity : AppCompatActivity() {
         })
     }
 
-    private fun findProductDescription(barcode: String): String {
-        val url: URL
-        var response = ""
-        try {
-            val jsonParam = JSONObject()
-            jsonParam.put("barcode", barcode)
-
-            url = URL("https://warehouse.cc.nf/api/v1/barcode.php")
-
-            val conn = url.openConnection() as HttpURLConnection
-
-            conn.readTimeout = 15000
-            conn.connectTimeout = 15000
-            conn.requestMethod = "POST"
-            conn.doOutput = true
-
-            conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
-
-            val printout = DataOutputStream(conn.outputStream)
-            printout.write(jsonParam.toString().toByteArray(Charsets.UTF_8))
-            printout.flush()
-            printout.close()
-
-            val responseCode = conn.responseCode
-
-            if (responseCode == HttpsURLConnection.HTTP_OK) {
-                response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        return response
-    }
-
-    @SuppressLint("InflateParams")
     private fun showAddDescriptionDialogue(result: String) {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         val dialogBinding = AddProductDescriptionBinding.inflate(layoutInflater)
         val multiFormatWriter = MultiFormatWriter()
         try {
@@ -254,18 +288,19 @@ class ItemDetailsActivity : AppCompatActivity() {
             dialogBinding.imageView.setImageBitmap(bitmap)
             dialogBinding.barcode.text = result
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.w(TAG, e.toString())
         }
 
-        builder.setTitle("Product Not Found")
+        MaterialAlertDialogBuilder(this)
+            .setTitle(resources.getString(R.string.product_not_found))
             .setView(dialogBinding.root)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton(resources.getString(R.string.accept)) { _, _ ->
                 // Save to Firebase
                 val myRef = database.getReference("barcodes")
                 myRef.child(result).setValue(dialogBinding.tvProdDesc.text.toString())
                 binding.tvProductName.setText(dialogBinding.tvProdDesc.text.toString())
             }
-            .setNegativeButton("Cancel") { dialog, _ ->
+            .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _ ->
                 // Do nothing
                 dialog.dismiss()
             }
@@ -281,7 +316,7 @@ class ItemDetailsActivity : AppCompatActivity() {
 
         // Store values.
         val name = binding.tvProductName.text.toString()
-        val expDate = binding.tvExpDate.text.toString()
+        var expDate = binding.tvExpDate.text.toString()
         val amount = binding.tvAmount.text.toString()
         val box = binding.tvBox.text.toString()
 
@@ -297,12 +332,32 @@ class ItemDetailsActivity : AppCompatActivity() {
 
         // Check for a valid expiration date.
         if (expDate.isNotEmpty()) {
-            try {
-                mDateFormatter.parse(expDate)
-            } catch (e: DateTimeParseException) {
-                binding.tvExpDate.error = getString(R.string.invalidDate)
-                focusView = binding.tvExpDate
-                cancel = true
+            val date = expDate.split('-')
+            if (date.size == 3) {
+                try {
+                    LocalDate.parse(
+                        expDate,
+                        dateFormatter
+                    )
+                } catch (e: DateTimeParseException) {
+                    binding.tvExpDate.error = getString(R.string.invalidDate)
+                    focusView = binding.tvExpDate
+                    cancel = true
+                }
+            }
+            if (date.size == 2) {
+                try {
+                    val parsedDated = LocalDate.parse(
+                        "$expDate-01",
+                        dateFormatter
+                    )
+                    Log.d(TAG, parsedDated.toString())
+                    expDate = parsedDated.with(lastDayOfMonth()).format(dateFormatter)
+                } catch (e: DateTimeParseException) {
+                    binding.tvExpDate.error = getString(R.string.invalidDate)
+                    focusView = binding.tvExpDate
+                    cancel = true
+                }
             }
         }
 
@@ -323,7 +378,7 @@ class ItemDetailsActivity : AppCompatActivity() {
         if (cancel) {
             // There was an error; don't attempt to store data and focus the first
             // form field with an error.
-            focusView!!.requestFocus()
+            focusView?.requestFocus()
         } else {
             item.name = name
             item.exp_date = expDate
@@ -332,7 +387,7 @@ class ItemDetailsActivity : AppCompatActivity() {
 
             // Save item to firebase
             if (item.id.isNullOrEmpty()) {
-                val myRef = database.getReference("items").child(user?.uid!!)
+                val myRef = database.getReference("items").child(user?.uid.toString())
 
                 val newItemRef = myRef.push()
                 newItemRef.setValue(item)
@@ -342,7 +397,8 @@ class ItemDetailsActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             } else {
-                val myRef = database.getReference("items").child(user?.uid!!).child(item.id!!)
+                val myRef = database.getReference("items").child(user?.uid.toString())
+                    .child(item.id.toString())
                 myRef.setValue(item)
                 myRef.child("id").removeValue()
 
@@ -355,41 +411,6 @@ class ItemDetailsActivity : AppCompatActivity() {
             val returnIntent = Intent()
             setResult(Activity.RESULT_OK, returnIntent)
             finish()
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.food_details, menu)
-        if (bundle == null) {
-            menu.findItem(R.id.food_delete).isVisible = false
-        }
-        return true
-    }
-
-    override fun onOptionsItemSelected(mnuItem: MenuItem) = when (mnuItem.itemId) {
-        R.id.food_save -> {
-            validateInputs()
-            true
-        }
-
-        R.id.food_delete -> {
-            val myRef = database.getReference("items").child(user?.uid!!).child(item.id!!)
-            myRef.removeValue()
-            Toast.makeText(
-                this, "Item Deleted Successfully.",
-                Toast.LENGTH_LONG
-            ).show()
-            val returnIntent = Intent()
-            setResult(Activity.RESULT_OK, returnIntent)
-            finish()
-            true
-        }
-
-        else -> {
-            // If we got here, the user's action was not recognized.
-            // Invoke the superclass to handle it.
-            super.onOptionsItemSelected(mnuItem)
         }
     }
 
