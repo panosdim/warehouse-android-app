@@ -351,7 +351,6 @@ class ItemDetailsActivity : AppCompatActivity() {
                         "$expDate-01",
                         dateFormatter
                     )
-                    Log.d(TAG, parsedDated.toString())
                     expDate = parsedDated.with(lastDayOfMonth()).format(dateFormatter)
                 } catch (e: DateTimeParseException) {
                     binding.tvExpDate.error = getString(R.string.invalidDate)

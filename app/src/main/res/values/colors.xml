@@ -56,7 +56,7 @@
     <color name="md_theme_dark_shadow">#000000</color>
     <color name="md_theme_dark_primaryInverse">#00668A</color>
     <color name="theme_light_expired">#b91646</color>
-    <color name="theme_dark_expired">#920023</color>
+    <color name="theme_dark_expired">#FF6347</color>
     <color name="theme_light_expires_soon">#5c6300</color>
     <color name="theme_dark_expires_soon">#c4d000</color>
     <color name="transparent_blue">#322100c8</color>
