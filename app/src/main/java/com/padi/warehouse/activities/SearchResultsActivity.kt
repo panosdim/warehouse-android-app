@@ -48,7 +48,7 @@ class SearchResultsActivity : AppCompatActivity() {
             it.name.toString().unaccent().contains(this.query, true)
         }
 
-        val itemViewAdapter = ItemAdapter(results) { itm: Item -> itemClicked(itm) }
+        val itemViewAdapter = ItemAdapter(results.toMutableList()) { itm: Item -> itemClicked(itm) }
 
         binding.rvResults.setHasFixedSize(true)
         binding.rvResults.layoutManager = LinearLayoutManager(this@SearchResultsActivity)
@@ -78,7 +78,8 @@ class SearchResultsActivity : AppCompatActivity() {
             results = items.filter {
                 it.name.toString().unaccent().contains(this.query, true)
             }
-            val itemViewAdapter = ItemAdapter(results) { itm: Item -> itemClicked(itm) }
+            val itemViewAdapter =
+                ItemAdapter(results.toMutableList()) { itm: Item -> itemClicked(itm) }
             binding.rvResults.adapter = itemViewAdapter
         }
     }

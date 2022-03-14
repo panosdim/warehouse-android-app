@@ -32,7 +32,10 @@ import com.padi.warehouse.adapters.ItemAdapter
 import com.padi.warehouse.databinding.ActivityMainBinding
 import com.padi.warehouse.dialogs.ItemsSortDialog
 import com.padi.warehouse.model.Item
-import com.padi.warehouse.utils.*
+import com.padi.warehouse.utils.ExtendedFloatingActionButtonScrollListener
+import com.padi.warehouse.utils.checkForNewVersion
+import com.padi.warehouse.utils.createNotificationChannel
+import com.padi.warehouse.utils.refId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -76,7 +79,8 @@ class MainActivity : AppCompatActivity() {
                 )
                 binding.progressBar.visibility = View.GONE
                 itemsSortDialog = ItemsSortDialog(binding.rvItems.adapter)
-                sortItems(binding.rvItems.adapter)
+                val adapter = binding.rvItems.adapter as ItemAdapter
+                adapter.sortItems()
             }
         })
 
@@ -95,8 +99,8 @@ class MainActivity : AppCompatActivity() {
                     item.id = dataSnapshot.key
                     val index = items.indexOfFirst { itm -> itm.id == item.id }
                     items[index] = item
-//                    binding.rvItems.adapter?.notifyItemChanged(index)
-                    sortItems(binding.rvItems.adapter)
+                    val adapter = binding.rvItems.adapter as ItemAdapter
+                    adapter.sortItems()
                 }
             }
 
@@ -115,9 +119,8 @@ class MainActivity : AppCompatActivity() {
                 if (item != null) {
                     item.id = dataSnapshot.key
                     items.add(item)
-//                    val index = items.indexOf(item)
-//                    binding.rvItems.adapter?.notifyItemInserted(index)
-                    sortItems(binding.rvItems.adapter)
+                    val adapter = binding.rvItems.adapter as ItemAdapter
+                    adapter.sortItems()
                 }
             }
         })

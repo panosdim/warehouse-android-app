@@ -4,17 +4,22 @@ import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.padi.warehouse.R
 import com.padi.warehouse.databinding.ItemRowBinding
 import com.padi.warehouse.model.Item
-import com.padi.warehouse.utils.resolveColorAttr
+import com.padi.warehouse.utils.*
 import java.time.LocalDate
 import java.time.LocalDate.now
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 
-class ItemAdapter(private val itemsList: List<Item>, private val clickListener: (Item) -> Unit) :
+
+class ItemAdapter(
+    private val itemsList: MutableList<Item>,
+    private val clickListener: (Item) -> Unit
+) :
     RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
     private val today = now()
     private val dateFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
@@ -85,6 +90,41 @@ class ItemAdapter(private val itemsList: List<Item>, private val clickListener: 
             params.setMargins(params.leftMargin, params.topMargin, params.rightMargin, bottomMargin)
             view.requestLayout()
         }
+    }
+
+    private fun updateItemsList(items: List<Item>) {
+        val diffCallback = ItemDiffCallback(this.itemsList, items)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        this.itemsList.clear()
+        this.itemsList.addAll(items)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun sortItems() {
+        val sortedItems = itemsList.map { it.copy() }.toMutableList()
+        when (sortField) {
+            SortField.NAME -> {
+                when (sortDirection) {
+                    SortDirection.ASC -> sortedItems.sortBy { it.name }
+                    SortDirection.DESC -> sortedItems.sortByDescending { it.name }
+                }
+            }
+
+            SortField.EXP_DATE -> {
+                when (sortDirection) {
+                    SortDirection.ASC -> sortedItems.sortWith(expDateAsc)
+                    SortDirection.DESC -> sortedItems.sortWith(expDateDesc)
+                }
+            }
+
+            SortField.BOX -> {
+                when (sortDirection) {
+                    SortDirection.ASC -> sortedItems.sortBy { it.box }
+                    SortDirection.DESC -> sortedItems.sortByDescending { it.box }
+                }
+            }
+        }
+        updateItemsList(sortedItems)
     }
 
     override fun getItemCount() = itemsList.size
