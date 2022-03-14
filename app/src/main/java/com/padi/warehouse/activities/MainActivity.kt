@@ -66,6 +66,8 @@ class MainActivity : AppCompatActivity() {
                 // Not used
             }
 
+            // Listen for one time in order to know when all data are readed from Firebase
+            // so we can hide the progress bar and show the data.
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val itemViewAdapter = ItemAdapter(items) { itm: Item -> itemClicked(itm) }
 
@@ -100,6 +102,7 @@ class MainActivity : AppCompatActivity() {
                     val index = items.indexOfFirst { itm -> itm.id == item.id }
                     items[index] = item
                     val adapter = binding.rvItems.adapter as ItemAdapter
+                    adapter.notifyItemChanged(index)
                     adapter.sortItems()
                 }
             }
@@ -119,7 +122,9 @@ class MainActivity : AppCompatActivity() {
                 if (item != null) {
                     item.id = dataSnapshot.key
                     items.add(item)
+                    val index = items.indexOf(item)
                     val adapter = binding.rvItems.adapter as ItemAdapter
+                    adapter.notifyItemInserted(index)
                     adapter.sortItems()
                 }
             }
