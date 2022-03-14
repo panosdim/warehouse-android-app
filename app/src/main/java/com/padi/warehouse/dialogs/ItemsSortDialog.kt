@@ -9,10 +9,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.padi.warehouse.R
 import com.padi.warehouse.adapters.ItemAdapter
 import com.padi.warehouse.databinding.DialogItemsSortBinding
-import com.padi.warehouse.utils.SortDirection
-import com.padi.warehouse.utils.SortField
-import com.padi.warehouse.utils.sortDirection
-import com.padi.warehouse.utils.sortField
+import com.padi.warehouse.utils.*
 
 class ItemsSortDialog(
     private val itemsAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>?
@@ -26,6 +23,7 @@ class ItemsSortDialog(
     ): View {
         _binding = DialogItemsSortBinding.inflate(inflater, container, false)
         val root: View = binding.root
+        val adapter = itemsAdapter as ItemAdapter
 
         binding.rgField.setOnCheckedChangeListener { _, checkedRadioButtonId ->
             when (checkedRadioButtonId) {
@@ -33,8 +31,7 @@ class ItemsSortDialog(
                 R.id.rbName -> sortField = SortField.NAME
                 R.id.rbBox -> sortField = SortField.BOX
             }
-            val adapter = itemsAdapter as ItemAdapter
-            adapter.sortItems()
+            sortItems(adapter)
         }
 
         binding.rgDirection.setOnCheckedChangeListener { _, checkedRadioButtonId ->
@@ -42,8 +39,7 @@ class ItemsSortDialog(
                 R.id.rbAscending -> sortDirection = SortDirection.ASC
                 R.id.rbDescending -> sortDirection = SortDirection.DESC
             }
-            val adapter = itemsAdapter as ItemAdapter
-            adapter.sortItems()
+            sortItems(adapter)
         }
 
         return root

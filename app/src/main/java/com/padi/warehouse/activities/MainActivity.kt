@@ -32,10 +32,7 @@ import com.padi.warehouse.adapters.ItemAdapter
 import com.padi.warehouse.databinding.ActivityMainBinding
 import com.padi.warehouse.dialogs.ItemsSortDialog
 import com.padi.warehouse.model.Item
-import com.padi.warehouse.utils.ExtendedFloatingActionButtonScrollListener
-import com.padi.warehouse.utils.checkForNewVersion
-import com.padi.warehouse.utils.createNotificationChannel
-import com.padi.warehouse.utils.refId
+import com.padi.warehouse.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,7 +63,7 @@ class MainActivity : AppCompatActivity() {
                 // Not used
             }
 
-            // Listen for one time in order to know when all data are readed from Firebase
+            // Listen for one time in order to know when all data are read from Firebase
             // so we can hide the progress bar and show the data.
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val itemViewAdapter = ItemAdapter(items) { itm: Item -> itemClicked(itm) }
@@ -82,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                 binding.progressBar.visibility = View.GONE
                 itemsSortDialog = ItemsSortDialog(binding.rvItems.adapter)
                 val adapter = binding.rvItems.adapter as ItemAdapter
-                adapter.sortItems()
+                sortItems(adapter)
             }
         })
 
@@ -103,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                     items[index] = item
                     val adapter = binding.rvItems.adapter as ItemAdapter
                     adapter.notifyItemChanged(index)
-                    adapter.sortItems()
+                    sortItems(adapter)
                 }
             }
 
@@ -125,7 +122,7 @@ class MainActivity : AppCompatActivity() {
                     val index = items.indexOf(item)
                     val adapter = binding.rvItems.adapter as ItemAdapter
                     adapter.notifyItemInserted(index)
-                    adapter.sortItems()
+                    sortItems(adapter)
                 }
             }
         })
