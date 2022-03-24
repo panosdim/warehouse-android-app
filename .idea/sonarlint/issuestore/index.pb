@@ -27,7 +27,5 @@ o
 ?app/src/main/java/com/padi/warehouse/dialogs/ItemsSortDialog.kt,4\f\4f3aad0ea9ea10d22428893e4cea91bc87f42f46
 x
 Happ/src/main/java/com/padi/warehouse/activities/SearchResultsActivity.kt,2\0\20fe4af8489a49f81c6ea86860c739c12b5566a4
-[
-+app/src/main/java/com/padi/warehouse/App.kt,4\e\4edbcb16a452ed9b00e95fcff2cf7ae798d59764
 l
 <app/src/main/java/com/padi/warehouse/adapters/ItemAdapter.kt,4\e\4e1230db86834941d38649c74e9d152ee1c3e4a3

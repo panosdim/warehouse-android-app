@@ -22,8 +22,8 @@ android {
         applicationId "com.padi.warehouse"
         minSdkVersion 26
         targetSdkVersion 31
-        versionCode 9
-        versionName '2.1'
+        versionCode 10
+        versionName '2.2'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -90,5 +90,6 @@ dependencies {
     // Android Work
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
 
+    // JSoup
     implementation 'org.jsoup:jsoup:1.14.3'
 }
