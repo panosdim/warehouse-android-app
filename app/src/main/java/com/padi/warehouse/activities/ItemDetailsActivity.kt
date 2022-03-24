@@ -38,7 +38,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
@@ -260,17 +259,13 @@ class ItemDetailsActivity : AppCompatActivity() {
                         val prod = product.await()
 
                         if (prod.isNotEmpty()) {
-                            val res = JSONObject(prod)
-                            if (res.getBoolean("found")) {
-                                binding.tvProductName.setText(res.getString("description"))
-                                // Store description in database
-                                val barcodeRef = database.getReference("barcodes")
-                                barcodeRef.child(barcode)
-                                    .setValue(res.getString("description"))
-                            } else {
-                                // Show dialogue to add description when product not found
-                                showAddDescriptionDialogue(barcode)
-                            }
+                            binding.tvProductName.setText(prod)
+                            // Store description in database
+                            val barcodeRef = database.getReference("barcodes")
+                            barcodeRef.child(barcode).setValue(prod)
+                        } else {
+                            // Show dialogue to add description when product not found
+                            showAddDescriptionDialogue(barcode)
                         }
                     }
                 }

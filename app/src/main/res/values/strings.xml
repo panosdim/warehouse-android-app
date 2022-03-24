@@ -43,4 +43,8 @@
     <string name="chip_box_3">Box 3</string>
     <string name="chip_box_4">Box 4</string>
     <string name="_date_helper_text">Date format is YYYY-MM-DD or YYYY-MM</string>
+    <string name="new_version">"    New version is available and is downloading on the background."</string>
+    <string name="permission_title">Permission Required</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="permission_description">Write to external storage is required in order to download the new app version apk file.</string>
 </resources>

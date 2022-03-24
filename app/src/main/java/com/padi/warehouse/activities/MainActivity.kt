@@ -13,15 +13,16 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.firebase.ui.auth.AuthUI
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
@@ -33,9 +34,6 @@ import com.padi.warehouse.databinding.ActivityMainBinding
 import com.padi.warehouse.dialogs.ItemsSortDialog
 import com.padi.warehouse.model.Item
 import com.padi.warehouse.utils.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 
@@ -50,6 +48,53 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        // Handle new version installation after the download of APK file.
+        manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        onComplete = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val referenceId = intent!!.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (referenceId != -1L && referenceId == refId) {
+                    val apkUri = manager.getUriForDownloadedFile(refId)
+                    val installIntent = Intent(Intent.ACTION_VIEW)
+                    installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive")
+                    installIntent.flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    startActivity(installIntent)
+                }
+
+            }
+        }
+        registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+
+        // Check for permission to read/write to external storage
+        val requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+                if (isGranted) {
+                    checkForNewVersion(this)
+                } else {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(resources.getString(R.string.permission_title))
+                        .setMessage(resources.getString(R.string.permission_description))
+                        .setPositiveButton(resources.getString(R.string.dismiss)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+            }
+        when (PackageManager.PERMISSION_GRANTED) {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) -> {
+                checkForNewVersion(this)
+            }
+            else -> {
+                requestPermissionLauncher.launch(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            }
+        }
 
         createNotificationChannel(this)
         FirebaseApp.initializeApp(this)
@@ -132,24 +177,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Check for permissions to download new version of the app
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                RC.PERMISSION_REQUEST.code
-            )
-        }
-
         // Check for expired items
         val itemExpiredBuilder =
             PeriodicWorkRequestBuilder<ExpiredItemsWorker>(30, TimeUnit.DAYS)
@@ -161,31 +188,6 @@ class MainActivity : AppCompatActivity() {
             ExistingPeriodicWorkPolicy.KEEP,
             itemExpiredWork
         )
-
-        manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-        // Check for new version
-        val scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
-            checkForNewVersion(this@MainActivity)
-        }
-
-        onComplete = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val referenceId = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                if (referenceId != -1L && referenceId == refId) {
-                    val apkUri = manager.getUriForDownloadedFile(refId)
-                    val installIntent = Intent(Intent.ACTION_VIEW)
-                    installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive")
-                    installIntent.flags =
-                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    startActivity(installIntent)
-                }
-
-            }
-        }
-
-        registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
     }
 
     private fun itemClicked(itm: Item) {
