@@ -29,3 +29,11 @@ x
 Happ/src/main/java/com/padi/warehouse/activities/SearchResultsActivity.kt,2\0\20fe4af8489a49f81c6ea86860c739c12b5566a4
 l
 <app/src/main/java/com/padi/warehouse/adapters/ItemAdapter.kt,4\e\4e1230db86834941d38649c74e9d152ee1c3e4a3
+A
+gradle.properties,2\a\2afbb999f001938c88fa43fc2ef52abf0f8213e4
+?
+settings.gradle,0\5\05efc8b1657769a27696d478ded1e95f38737233
+K
+.idea/dictionaries/padi.xml,f\8\f8f484205df1375b99fe5fc0cffe1b151aca3c4a
+j
+:app/src/main/java/com/padi/warehouse/model/FileMetadata.kt,5\3\53f6e5decf391b512ec32e43779ac1bdd3990945
