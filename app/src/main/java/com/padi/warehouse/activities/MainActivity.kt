@@ -1,28 +1,23 @@
 package com.padi.warehouse.activities
 
-import android.Manifest
 import android.app.DownloadManager
 import android.app.SearchManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.firebase.ui.auth.AuthUI
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
@@ -53,51 +48,29 @@ class MainActivity : AppCompatActivity() {
         manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         onComplete = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                val referenceId = intent!!.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                if (referenceId != -1L && referenceId == refId) {
-                    val apkUri = manager.getUriForDownloadedFile(refId)
-                    val installIntent = Intent(Intent.ACTION_VIEW)
-                    installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive")
-                    installIntent.flags =
-                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    startActivity(installIntent)
+                intent?.let {
+                    val referenceId = it.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                    if (referenceId != -1L && referenceId == refId) {
+                        val apkUri = manager.getUriForDownloadedFile(refId)
+                        val installIntent = Intent(Intent.ACTION_VIEW)
+                        installIntent.setDataAndType(
+                            apkUri,
+                            "application/vnd.android.package-archive"
+                        )
+                        installIntent.flags =
+                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        startActivity(installIntent)
+                    }
                 }
-
             }
         }
         registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
-        // Check for permission to read/write to external storage
-        val requestPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-                if (isGranted) {
-                    checkForNewVersion(this)
-                } else {
-                    MaterialAlertDialogBuilder(this)
-                        .setTitle(resources.getString(R.string.permission_title))
-                        .setMessage(resources.getString(R.string.permission_description))
-                        .setPositiveButton(resources.getString(R.string.dismiss)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .show()
-                }
-            }
-        when (PackageManager.PERMISSION_GRANTED) {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) -> {
-                checkForNewVersion(this)
-            }
-            else -> {
-                requestPermissionLauncher.launch(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-            }
-        }
-
         createNotificationChannel(this)
         FirebaseApp.initializeApp(this)
+
+        // Check for new version
+        checkForNewVersion(this)
 
         binding.progressBar.visibility = View.VISIBLE
 
