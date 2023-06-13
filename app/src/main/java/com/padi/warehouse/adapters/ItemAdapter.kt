@@ -1,12 +1,15 @@
 package com.padi.warehouse.adapters
 
 import android.content.res.Resources
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.padi.warehouse.R
+import com.padi.warehouse.TAG
 import com.padi.warehouse.databinding.ItemRowBinding
 import com.padi.warehouse.model.Item
 import com.padi.warehouse.utils.ItemDiffCallback
@@ -14,6 +17,7 @@ import com.padi.warehouse.utils.resolveColorAttr
 import java.time.LocalDate
 import java.time.LocalDate.now
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.time.temporal.TemporalAdjusters
 
 
@@ -59,19 +63,24 @@ class ItemAdapter(
                 binding.name.setTextColor(itemView.context.resolveColorAttr(R.attr.colorOnSurface))
 
                 if (!exp_date.isNullOrEmpty()) {
-                    val date = LocalDate.parse(exp_date)
-                    binding.expDate.text = date.format(dateFormatter)
+                    try {
+                        val date = LocalDate.parse(exp_date)
+                        binding.expDate.text = date.format(dateFormatter)
 
-                    if (date.isBefore(today)) {
-                        binding.expDate.setTextColor(itemView.context.resolveColorAttr(R.attr.colorExpired))
-                        binding.name.setTextColor(itemView.context.resolveColorAttr(R.attr.colorExpired))
-                    }
+                        if (date.isBefore(today)) {
+                            binding.expDate.setTextColor(itemView.context.resolveColorAttr(R.attr.colorExpired))
+                            binding.name.setTextColor(itemView.context.resolveColorAttr(R.attr.colorExpired))
+                        }
 
-                    if ((date.isBefore(nextMonthLastDay) || date.isEqual(nextMonthLastDay))
-                        && date.isAfter(today)
-                    ) {
-                        binding.expDate.setTextColor(itemView.context.resolveColorAttr(R.attr.colorExpiresSoon))
-                        binding.name.setTextColor(itemView.context.resolveColorAttr(R.attr.colorExpiresSoon))
+                        if ((date.isBefore(nextMonthLastDay) || date.isEqual(nextMonthLastDay))
+                            && date.isAfter(today)
+                        ) {
+                            binding.expDate.setTextColor(itemView.context.resolveColorAttr(R.attr.colorExpiresSoon))
+                            binding.name.setTextColor(itemView.context.resolveColorAttr(R.attr.colorExpiresSoon))
+                        }
+                    } catch (e: DateTimeParseException) {
+                        Log.w(TAG, "Cannot parse date string: $exp_date")
+                        FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 }
                 holder.itemView.setOnClickListener { clickListener(this) }
@@ -101,7 +110,7 @@ class ItemAdapter(
         diffResult.dispatchUpdatesTo(this)
     }
 
-    
+
     override fun getItemCount() = itemsList.size
 
     inner class ItemViewHolder(val binding: ItemRowBinding) :
