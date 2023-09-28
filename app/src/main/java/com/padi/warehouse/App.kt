@@ -1,16 +1,14 @@
 package com.padi.warehouse
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.padi.warehouse.model.Item
+import androidx.camera.core.Camera
+import androidx.compose.ui.unit.dp
 
-enum class MSG(val message: String) {
-    ITEM("com.panosdim.warehouse.item")
-}
 
-const val TAG = "WARE_HOUSE"
+val paddingSmall = 4.dp
+val paddingLarge = 8.dp
+val paddingExtraLarge = 16.dp
+
+var camera: Camera? = null
+
 const val CHANNEL_ID = "Warehouse-Channel"
-
-var user = FirebaseAuth.getInstance().currentUser
-val database = FirebaseDatabase.getInstance()
-var items: MutableList<Item> = mutableListOf()
+const val TAG = "Warehouse-Tag"

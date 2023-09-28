@@ -1,66 +1,10 @@
-<resources>
-    <color name="md_theme_light_primary">#00668A</color>
-    <color name="md_theme_light_onPrimary">#FFFFFF</color>
-    <color name="md_theme_light_primaryContainer">#C0E8FF</color>
-    <color name="md_theme_light_onPrimaryContainer">#001E2C</color>
-    <color name="md_theme_light_secondary">#7F5700</color>
-    <color name="md_theme_light_onSecondary">#FFFFFF</color>
-    <color name="md_theme_light_secondaryContainer">#FFDEA8</color>
-    <color name="md_theme_light_onSecondaryContainer">#281900</color>
-    <color name="md_theme_light_tertiary">#006D3F</color>
-    <color name="md_theme_light_onTertiary">#FFFFFF</color>
-    <color name="md_theme_light_tertiaryContainer">#93F7BA</color>
-    <color name="md_theme_light_onTertiaryContainer">#00210F</color>
-    <color name="md_theme_light_error">#B3261E</color>
-    <color name="md_theme_light_errorContainer">#F9DEDC</color>
-    <color name="md_theme_light_onError">#FFFFFF</color>
-    <color name="md_theme_light_onErrorContainer">#410E0B</color>
-    <color name="md_theme_light_background">#FFFBFE</color>
-    <color name="md_theme_light_onBackground">#1C1B1F</color>
-    <color name="md_theme_light_surface">#FFFBFE</color>
-    <color name="md_theme_light_onSurface">#1C1B1F</color>
-    <color name="md_theme_light_surfaceVariant">#E7E0EC</color>
-    <color name="md_theme_light_onSurfaceVariant">#49454F</color>
-    <color name="md_theme_light_outline">#79747E</color>
-    <color name="md_theme_light_inverseOnSurface">#F4EFF4</color>
-    <color name="md_theme_light_inverseSurface">#313033</color>
-    <color name="md_theme_light_inversePrimary">#73D1FF</color>
-    <color name="md_theme_light_shadow">#000000</color>
-    <color name="md_theme_light_primaryInverse">#73D1FF</color>
-    <color name="md_theme_dark_primary">#73D1FF</color>
-    <color name="md_theme_dark_onPrimary">#003549</color>
-    <color name="md_theme_dark_primaryContainer">#004D68</color>
-    <color name="md_theme_dark_onPrimaryContainer">#C0E8FF</color>
-    <color name="md_theme_dark_secondary">#FFBA31</color>
-    <color name="md_theme_dark_onSecondary">#432C00</color>
-    <color name="md_theme_dark_secondaryContainer">#604100</color>
-    <color name="md_theme_dark_onSecondaryContainer">#FFDEA8</color>
-    <color name="md_theme_dark_tertiary">#77DA9F</color>
-    <color name="md_theme_dark_onTertiary">#00391E</color>
-    <color name="md_theme_dark_tertiaryContainer">#00522E</color>
-    <color name="md_theme_dark_onTertiaryContainer">#93F7BA</color>
-    <color name="md_theme_dark_error">#F2B8B5</color>
-    <color name="md_theme_dark_errorContainer">#8C1D18</color>
-    <color name="md_theme_dark_onError">#601410</color>
-    <color name="md_theme_dark_onErrorContainer">#F9DEDC</color>
-    <color name="md_theme_dark_background">#1C1B1F</color>
-    <color name="md_theme_dark_onBackground">#E6E1E5</color>
-    <color name="md_theme_dark_surface">#1C1B1F</color>
-    <color name="md_theme_dark_onSurface">#E6E1E5</color>
-    <color name="md_theme_dark_surfaceVariant">#49454F</color>
-    <color name="md_theme_dark_onSurfaceVariant">#CAC4D0</color>
-    <color name="md_theme_dark_outline">#938F99</color>
-    <color name="md_theme_dark_inverseOnSurface">#1C1B1F</color>
-    <color name="md_theme_dark_inverseSurface">#E6E1E5</color>
-    <color name="md_theme_dark_inversePrimary">#00668A</color>
-    <color name="md_theme_dark_shadow">#000000</color>
-    <color name="md_theme_dark_primaryInverse">#00668A</color>
-    <color name="theme_light_expired">#b91646</color>
-    <color name="theme_dark_expired">#FF6347</color>
-    <color name="theme_light_expires_soon">#5c6300</color>
-    <color name="theme_dark_expires_soon">#c4d000</color>
-    <color name="transparent_blue">#322100c8</color>
-    <color name="zxingPrimary">#f44336</color>
-    <color name="zxingPrimaryDark">#d32f2f</color>
-    <color name="zxingAccent">#00c853</color>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="purple_200" tools:ignore="UnusedResources">#FFBB86FC</color>
+    <color name="purple_500" tools:ignore="UnusedResources">#FF6200EE</color>
+    <color name="purple_700" tools:ignore="UnusedResources">#FF3700B3</color>
+    <color name="teal_200" tools:ignore="UnusedResources">#FF03DAC5</color>
+    <color name="teal_700" tools:ignore="UnusedResources">#FF018786</color>
+    <color name="black" tools:ignore="UnusedResources">#FF000000</color>
+    <color name="white" tools:ignore="UnusedResources">#FFFFFFFF</color>
 </resources>
