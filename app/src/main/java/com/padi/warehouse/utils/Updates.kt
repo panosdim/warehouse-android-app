@@ -6,66 +6,70 @@ import android.app.NotificationManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.pm.PackageInfoCompat
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.ktx.storage
 import com.padi.warehouse.CHANNEL_ID
 import com.padi.warehouse.R
 import com.padi.warehouse.TAG
 import com.padi.warehouse.models.FileMetadata
 import kotlinx.serialization.json.Json
+import java.io.BufferedReader
+import java.net.HttpURLConnection
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 
 var refId: Long = -1
 
 fun checkForNewVersion(context: Context) {
-    val storage = Firebase.storage
     val metadataFileName = "output-metadata.json"
     val apkFileName = "app-release.apk"
+    val backendUrl = "https://apps.dsw.mywire.org/warehouse/"
+    val url: URL
 
-    // Create a storage reference from our app
-    val storageRef = storage.reference
+    try {
+        url = URL(backendUrl + metadataFileName)
+        val conn = url.openConnection() as HttpURLConnection
+        conn.instanceFollowRedirects = true
+        conn.requestMethod = "GET"
+        conn.readTimeout = 15000
+        conn.connectTimeout = 15000
+        conn.useCaches = false
 
-    // Create a metadata reference
-    val metadataRef: StorageReference = storageRef.child(metadataFileName)
+        val responseCode = conn.responseCode
 
-    metadataRef.getBytes(Long.MAX_VALUE).addOnSuccessListener {
-        // Use the bytes to display the image
-        val data = String(it)
-        val fileMetadata = Json.decodeFromString<FileMetadata>(data)
-        val version = fileMetadata.elements[0].versionCode
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
+            val data = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+            val fileMetadata = Json.decodeFromString<FileMetadata>(data)
+            val version = fileMetadata.elements[0].versionCode
 
-        val appVersion = PackageInfoCompat.getLongVersionCode(
-            context.packageManager.getPackageInfo(
-                context.packageName,
-                0
+            val appVersion = PackageInfoCompat.getLongVersionCode(
+                context.packageManager.getPackageInfo(
+                    context.packageName,
+                    0
+                )
             )
-        )
 
-        if (version > appVersion) {
-            Toast.makeText(
-                context,
-                context.getString(R.string.new_version),
-                Toast.LENGTH_LONG
-            ).show()
+            if (version > appVersion) {
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.new_version),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
-            val versionName = fileMetadata.elements[0].versionName
+                val versionName = fileMetadata.elements[0].versionName
 
-            // Create an apk reference
-            val apkRef = storageRef.child(apkFileName)
-
-            apkRef.downloadUrl.addOnSuccessListener { uri ->
-                downloadNewVersion(context, uri, versionName)
-            }.addOnFailureListener {
-                // Handle any errors
-                Log.w(TAG, "Fail to download file $apkFileName")
+                // Download APK file
+                val apkUri = Uri.parse(backendUrl + apkFileName)
+                downloadNewVersion(context, apkUri, versionName)
             }
         }
-    }.addOnFailureListener {
-        // Handle any errors
-        Log.w(TAG, "Fail to retrieve $metadataFileName")
+    } catch (e: Exception) {
+        Log.d(TAG, e.toString())
     }
 }
 

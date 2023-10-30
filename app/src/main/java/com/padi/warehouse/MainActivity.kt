@@ -27,11 +27,15 @@ import com.padi.warehouse.ui.theme.WarehouseTheme
 import com.padi.warehouse.utils.checkForNewVersion
 import com.padi.warehouse.utils.createNotificationChannel
 import com.padi.warehouse.utils.refId
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     private lateinit var manager: DownloadManager
     private lateinit var onComplete: BroadcastReceiver
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,7 +87,9 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
 
         // Check for new version
-        checkForNewVersion(this)
+        scope.launch {
+            checkForNewVersion(this@MainActivity)
+        }
 
         // Check for Notifications Permissions
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
