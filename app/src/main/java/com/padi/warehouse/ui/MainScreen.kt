@@ -60,8 +60,9 @@ fun MainScreen() {
     val sortSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = skipPartiallyExpanded
     )
-
-    var openItemDialog by remember { mutableStateOf(false) }
+    val itemSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = skipPartiallyExpanded
+    )
 
     val sortField =
         sortViewModel.sortField.collectAsStateWithLifecycle(initialValue = SortField.DATE)
@@ -117,7 +118,7 @@ fun MainScreen() {
                 ExtendedFloatingActionButton(
                     onClick = {
                         item = null
-                        openItemDialog = true
+                        scope.launch { itemSheetState.show() }
                     },
                     expanded = expandedFab,
                     icon = {
@@ -178,7 +179,7 @@ fun MainScreen() {
                             item {
                                 ItemCard(it.key, it.value) {
                                     item = it
-                                    openItemDialog = true
+                                    scope.launch { itemSheetState.show() }
                                 }
                             }
                         }
@@ -206,10 +207,6 @@ fun MainScreen() {
         }
 
         SortSheet(bottomSheetState = sortSheetState)
-
-        ItemDialog(
-            item,
-            openItemDialog,
-        ) { openItemDialog = false }
+        ItemSheet(item, itemSheetState)
     }
 }

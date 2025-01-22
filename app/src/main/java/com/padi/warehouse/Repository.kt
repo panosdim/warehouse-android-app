@@ -171,7 +171,6 @@ class Repository {
         listener?.let {
             dbRef?.removeEventListener(it)
         }
-
     }
 
     fun findProductName(barcode: String): Flow<String> {

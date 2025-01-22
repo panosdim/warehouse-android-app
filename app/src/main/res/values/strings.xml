@@ -42,4 +42,6 @@
     <string name="item_added_error_toast">Error adding item</string>
     <string name="item_updated_error_toast">Error updating item</string>
     <string name="delete_item_error_toast">Error deleting item</string>
+    <string name="hinted_product_search">Hinted product search</string>
+    <string name="sort_options">Sort Options</string>
 </resources>

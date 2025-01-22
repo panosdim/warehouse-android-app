@@ -23,6 +23,8 @@ import javax.net.ssl.HttpsURLConnection
 
 var refId: Long = -1
 
+private val json = Json { ignoreUnknownKeys = true }
+
 fun checkForNewVersion(context: Context) {
     val metadataFileName = "output-metadata.json"
     val apkFileName = "app-release.apk"
@@ -42,7 +44,7 @@ fun checkForNewVersion(context: Context) {
 
         if (responseCode == HttpsURLConnection.HTTP_OK) {
             val data = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-            val fileMetadata = Json.decodeFromString<FileMetadata>(data)
+            val fileMetadata = json.decodeFromString<FileMetadata>(data)
             val version = fileMetadata.elements[0].versionCode
 
             val appVersion = PackageInfoCompat.getLongVersionCode(

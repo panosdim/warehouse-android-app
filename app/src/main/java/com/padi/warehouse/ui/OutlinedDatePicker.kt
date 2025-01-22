@@ -113,7 +113,6 @@ fun OutlinedDatePicker(
         },
         onValueChange = {
             state.value = it
-            datePickerState.setSelection(it.toLocalDate()?.toEpochMilli())
         },
     )
 }

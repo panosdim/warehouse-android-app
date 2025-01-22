@@ -2,7 +2,7 @@ package com.padi.warehouse.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -159,5 +159,5 @@ fun ItemDetails(itemDetails: Item, selectedItem: (item: Item) -> Unit) {
         }
     }
 
-    Divider()
+    HorizontalDivider()
 }

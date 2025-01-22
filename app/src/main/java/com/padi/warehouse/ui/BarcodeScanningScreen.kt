@@ -3,23 +3,38 @@ package com.padi.warehouse.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.compose.foundation.layout.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionRequired
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.padi.warehouse.R
 import com.padi.warehouse.barcode.BarcodeScanningAnalyzer
@@ -28,36 +43,43 @@ import com.padi.warehouse.camera
 import com.padi.warehouse.paddingLarge
 import com.padi.warehouse.viewmodels.MainViewModel
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun BarcodeScanningScreen(onClose: (productName: String) -> Unit) {
     val context = LocalContext.current
-    val cameraPermissionState =
-        rememberPermissionState(permission = Manifest.permission.CAMERA)
+    var hasPermission by remember { mutableStateOf(false) }
 
-    PermissionRequired(
-        permissionState = cameraPermissionState,
-        permissionNotGrantedContent = {
-            LaunchedEffect(Unit) {
-                cameraPermissionState.launchPermissionRequest()
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            hasPermission = isGranted
+            if (!isGranted) {
+                Toast.makeText(context, "Camera permission denied.", Toast.LENGTH_LONG).show()
             }
-        },
-        permissionNotAvailableContent = {
-            Column {
-                Toast.makeText(context, "Permission denied.", Toast.LENGTH_LONG).show()
-            }
-        },
-        content = {
-            ScanSurface(onClose)
         }
     )
+
+    LaunchedEffect(Unit) {
+        permissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+
+    if (hasPermission) {
+        ScanSurface(onClose)
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = "Camera permission is required to scan barcodes.")
+        }
+    }
 }
 
 @Composable
 fun ScanSurface(onClose: (productName: String) -> Unit) {
     val viewModel: MainViewModel = viewModel()
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val detectedBarcode = remember { mutableStateOf<Barcode?>(null) }
 
     val torchEnabled = remember { mutableStateOf(false) }
@@ -94,7 +116,7 @@ fun ScanSurface(onClose: (productName: String) -> Unit) {
                 ) {
                     IconButton(onClick = { onClose("") }) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
                         )
                     }
@@ -166,4 +188,3 @@ fun ScanSurface(onClose: (productName: String) -> Unit) {
         }
     }
 }
-

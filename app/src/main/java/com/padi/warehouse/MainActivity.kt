@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     private lateinit var manager: DownloadManager
-    private lateinit var onComplete: BroadcastReceiver
     private val scope = CoroutineScope(Dispatchers.IO)
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
