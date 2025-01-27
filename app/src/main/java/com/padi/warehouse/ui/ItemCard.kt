@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -93,8 +94,14 @@ fun ItemCard(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
-                items.forEach { itemDetails ->
+                items.forEachIndexed { index, itemDetails ->
                     ItemDetails(itemDetails = itemDetails, selectedItem = selectedItem)
+                    if (index < items.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(paddingLarge),
+                        )
+                    }
                 }
             }
         }

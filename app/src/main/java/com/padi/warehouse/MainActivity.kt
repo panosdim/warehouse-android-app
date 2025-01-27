@@ -94,10 +94,10 @@ class MainActivity : ComponentActivity() {
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissionLauncher.launch(
-                    listOf(
+                    arrayOf(
                         Manifest.permission.POST_NOTIFICATIONS,
                         Manifest.permission.CAMERA
-                    ).toTypedArray()
+                    )
                 )
             }
         }
@@ -105,13 +105,13 @@ class MainActivity : ComponentActivity() {
 
         // Check for expired items
         val itemExpiredBuilder =
-            PeriodicWorkRequestBuilder<ExpiredItemsWorker>(30, TimeUnit.DAYS)
+            PeriodicWorkRequestBuilder<ExpiredItemsWorker>(7, TimeUnit.DAYS)
 
         val itemExpiredWork = itemExpiredBuilder.build()
         // Then enqueue the recurring task:
         WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
-            "itemExpired",
-            ExistingPeriodicWorkPolicy.KEEP,
+            "warehouse-item-expired",
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             itemExpiredWork
         )
 

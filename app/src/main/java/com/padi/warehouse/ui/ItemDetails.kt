@@ -2,7 +2,6 @@ package com.padi.warehouse.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -37,7 +36,8 @@ fun ItemDetails(itemDetails: Item, selectedItem: (item: Item) -> Unit) {
         .with(TemporalAdjusters.lastDayOfMonth())
 
     val darkTheme: Boolean = isSystemInDarkTheme()
-    var listItemColors = ListItemDefaults.colors()
+    var listItemColors =
+        ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
     if (sortField.value != SortField.DATE) {
         itemDetails.expirationDate.toLocalDate()?.let {
             if (it.isBefore(today)) {
@@ -46,6 +46,7 @@ fun ItemDetails(itemDetails: Item, selectedItem: (item: Item) -> Unit) {
                         headlineColor = if (darkTheme) expiredDark else expiredLight,
                         supportingColor = if (darkTheme) expiredDark else expiredLight,
                         trailingIconColor = if (darkTheme) expiredDark else expiredLight,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
             }
 
@@ -57,6 +58,7 @@ fun ItemDetails(itemDetails: Item, selectedItem: (item: Item) -> Unit) {
                         headlineColor = if (darkTheme) expiresSoonDark else expiresSoonLight,
                         supportingColor = if (darkTheme) expiresSoonDark else expiresSoonLight,
                         trailingIconColor = if (darkTheme) expiresSoonDark else expiresSoonLight,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
             }
         }
@@ -158,6 +160,4 @@ fun ItemDetails(itemDetails: Item, selectedItem: (item: Item) -> Unit) {
             )
         }
     }
-
-    HorizontalDivider()
 }
