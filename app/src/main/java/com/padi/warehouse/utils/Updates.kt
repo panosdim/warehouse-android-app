@@ -20,19 +20,19 @@ import java.io.BufferedReader
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
+import androidx.core.net.toUri
 
 var refId: Long = -1
 
 private val json = Json { ignoreUnknownKeys = true }
 
-fun checkForNewVersion(context: Context) {
+fun checkForNewVersion(context: Context, updateUrl: String) {
     val metadataFileName = "output-metadata.json"
     val apkFileName = "app-release.apk"
-    val backendUrl = "https://apps.dsw.mywire.org/warehouse/"
     val url: URL
 
     try {
-        url = URL(backendUrl + metadataFileName)
+        url = URL(updateUrl + metadataFileName)
         val conn = url.openConnection() as HttpURLConnection
         conn.instanceFollowRedirects = true
         conn.requestMethod = "GET"
@@ -66,7 +66,7 @@ fun checkForNewVersion(context: Context) {
                 val versionName = fileMetadata.elements[0].versionName
 
                 // Download APK file
-                val apkUri = Uri.parse(backendUrl + apkFileName)
+                val apkUri = (updateUrl + apkFileName).toUri()
                 downloadNewVersion(context, apkUri, versionName)
             }
         }

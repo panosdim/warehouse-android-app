@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +23,8 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.FirebaseApp
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.padi.warehouse.ui.MainScreen
 import com.padi.warehouse.ui.theme.WarehouseTheme
 import com.padi.warehouse.utils.checkForNewVersion
@@ -34,6 +37,7 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     private lateinit var manager: DownloadManager
+    private lateinit var remoteConfig: FirebaseRemoteConfig
     private val scope = CoroutineScope(Dispatchers.IO)
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -56,7 +60,7 @@ class MainActivity : ComponentActivity() {
             }
 
         // Handle new version installation after the download of APK file.
-        manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        manager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         onComplete = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val referenceId = intent!!.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
@@ -85,10 +89,25 @@ class MainActivity : ComponentActivity() {
         createNotificationChannel(this)
         FirebaseApp.initializeApp(this)
 
-        // Check for new version
-        scope.launch {
-            checkForNewVersion(this@MainActivity)
-        }
+        remoteConfig = FirebaseRemoteConfig.getInstance()
+        val configSettings = FirebaseRemoteConfigSettings.Builder()
+            .setMinimumFetchIntervalInSeconds(2592000) // Fetch at least every 30 days
+            .build()
+        remoteConfig.setConfigSettingsAsync(configSettings)
+
+        remoteConfig.fetchAndActivate()
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val updateUrl = remoteConfig.getString("UPDATE_URL")
+                    // Check for new version
+                    scope.launch {
+                        checkForNewVersion(this@MainActivity, updateUrl)
+                    }
+                } else {
+                    // Handle fetch failure (e.g., log the error)
+                    Log.e(TAG, "Error fetching remote config", task.exception)
+                }
+            }
 
         // Check for Notifications Permissions
         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
