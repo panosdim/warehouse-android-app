@@ -15,7 +15,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -85,7 +85,7 @@ fun SortSheet(
                     ) {
                         ElevatedFilterChip(
                             modifier = Modifier.menuAnchor(
-                                type = MenuAnchorType.PrimaryEditable,
+                                type = ExposedDropdownMenuAnchorType.PrimaryEditable,
                                 enabled = true
                             ),
                             selected = false,
@@ -116,7 +116,7 @@ fun SortSheet(
                     ) {
                         ElevatedFilterChip(
                             modifier = Modifier.menuAnchor(
-                                type = MenuAnchorType.PrimaryEditable,
+                                type = ExposedDropdownMenuAnchorType.PrimaryEditable,
                                 enabled = true
                             ),
                             selected = false,
