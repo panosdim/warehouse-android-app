@@ -73,10 +73,7 @@ fun LoginScreen(activity: LoginActivity) {
     }
 
     fun isPasswordValid(): Boolean {
-        if (password.isEmpty() || password.length < 5) {
-            return false
-        }
-        return true
+        return !(password.isEmpty() || password.length < 5)
     }
 
     fun isFormValid(): Boolean {

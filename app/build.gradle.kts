@@ -1,10 +1,10 @@
 plugins {
-    id("com.android.application")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
     id("kotlin-parcelize")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.20"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.20"
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -15,8 +15,8 @@ android {
         applicationId = "com.padi.warehouse"
         minSdk = 30
         targetSdk = 37
-        versionCode = 20
-        versionName = "3.5"
+        versionCode = 21
+        versionName = "3.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -50,49 +50,50 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.18.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
-    implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("androidx.fragment:fragment-ktx:1.8.9")
-    implementation(platform("androidx.compose:compose-bom:2026.03.01"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.03.01"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 
     // Firebase Dependencies
-    implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-database")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-config")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.config)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.analytics)
 
     // Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation(libs.kotlinx.serialization.json)
 
     // Android Work
-    implementation("androidx.work:work-runtime-ktx:2.11.2")
+    implementation(libs.androidx.work.runtime.ktx)
 
     // Barcode scan dependencies
-    val cameraXVersion = "1.6.0"
-    implementation("androidx.camera:camera-camera2:$cameraXVersion")
-    implementation("androidx.camera:camera-lifecycle:$cameraXVersion")
-    implementation("androidx.camera:camera-view:$cameraXVersion")
-    implementation("com.google.mlkit:barcode-scanning:17.3.0")
-    implementation("com.google.guava:guava:33.6.0-android")
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.barcode.scanning)
+    implementation(libs.guava)
 
     // JSoup
-    implementation("org.jsoup:jsoup:1.22.1")
+    implementation(libs.jsoup)
 }

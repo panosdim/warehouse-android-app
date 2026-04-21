@@ -8,9 +8,6 @@
     <string name="icon_password_hidden">Password Hidden</string>
     <string name="new_version">New version found and is downloading on the background</string>
     <string name="channel_name">Expired Items</string>
-    <string name="search">Search</string>
-    <string name="sort">Sort</string>
-    <string name="logout">Logout</string>
     <string name="add_item">New Item</string>
     <string name="no_items">No Items in Warehouse</string>
     <string name="confirm">Confirm</string>

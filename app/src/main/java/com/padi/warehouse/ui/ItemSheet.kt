@@ -63,25 +63,29 @@ fun ItemSheet(item: Item?, bottomSheetState: SheetState) {
         val showBarcodeScanner = remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
 
+        val productNameErrorEmpty = stringResource(R.string.product_name_error_empty)
         val productName = remember {
             FieldState(item?.name ?: "") {
                 if (it.isEmpty()) {
                     return@FieldState Pair(
                         true,
-                        context.getString(R.string.product_name_error_empty)
+                        productNameErrorEmpty
                     )
                 }
                 return@FieldState Pair(false, "")
             }
         }
+        val amountErrorEmpty = stringResource(R.string.amount_error_empty)
         val amount = remember {
             FieldState(item?.amount ?: "1") {
                 if (it.isEmpty()) {
-                    return@FieldState Pair(true, context.getString(R.string.amount_error_empty))
+                    return@FieldState Pair(true, amountErrorEmpty)
                 }
                 return@FieldState Pair(false, "")
             }
         }
+        val expirationErrorEmpty = stringResource(R.string.expiration_error_empty)
+        val dateFormatNotValid = stringResource(R.string.date_format_not_valid)
         val expiration = remember {
             FieldState(item?.expirationDate ?: "") {
                 if (it.matches(Regex(dateRegex))) {
@@ -90,17 +94,18 @@ fun ItemSheet(item: Item?, bottomSheetState: SheetState) {
                     if (it.isEmpty()) {
                         return@FieldState Pair(
                             true,
-                            context.getString(R.string.expiration_error_empty)
+                            expirationErrorEmpty
                         )
                     }
-                    return@FieldState Pair(true, context.getString(R.string.date_format_not_valid))
+                    return@FieldState Pair(true, dateFormatNotValid)
                 }
             }
         }
+        val boxErrorEmpty = stringResource(R.string.box_error_empty)
         val box = remember {
             FieldState(item?.box ?: "") {
                 if (it.isEmpty()) {
-                    return@FieldState Pair(true, context.getString(R.string.box_error_empty))
+                    return@FieldState Pair(true, boxErrorEmpty)
                 }
                 return@FieldState Pair(false, "")
             }

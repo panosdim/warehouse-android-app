@@ -89,7 +89,6 @@ fun MainScreen() {
         is Response.Success -> {
             isLoading = false
 
-            data = emptyMap()
             items =
                 (itemsResponse.value as Response.Success<List<Item>>).data
         }
@@ -175,9 +174,9 @@ fun MainScreen() {
                     }
 
                     if (data.isNotEmpty()) {
-                        data.iterator().forEachRemaining {
+                        data.iterator().forEachRemaining { entry ->
                             item {
-                                ItemCard(it.key, it.value) {
+                                ItemCard(entry.key, entry.value) {
                                     item = it
                                     scope.launch { itemSheetState.show() }
                                 }

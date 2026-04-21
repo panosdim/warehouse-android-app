@@ -57,7 +57,7 @@ fun CameraView(
                 )
             }, executor)
             preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(previewView.surfaceProvider)
+                it.surfaceProvider = previewView.surfaceProvider
             }
             previewView
         }

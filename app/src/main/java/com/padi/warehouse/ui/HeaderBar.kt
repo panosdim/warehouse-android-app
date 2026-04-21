@@ -52,7 +52,7 @@ fun HeaderBar(
     val viewModel: MainViewModel = viewModel()
     val context = LocalContext.current
 
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
     var query by remember { mutableStateOf(searchQuery) }
 
     SearchBar(
@@ -61,9 +61,9 @@ fun HeaderBar(
             .padding(paddingLarge),
         inputField = {
             SearchBarDefaults.InputField(
-                onSearch = { expanded = false },
-                expanded = expanded,
-                onExpandedChange = { expanded = it },
+                onSearch = { isExpanded = false },
+                expanded = isExpanded,
+                onExpandedChange = { active -> isExpanded = active },
                 placeholder = { Text(stringResource(R.string.hinted_product_search)) },
                 leadingIcon = {
                     if (query.isNotEmpty()) {
@@ -73,7 +73,7 @@ fun HeaderBar(
                             modifier = Modifier.clickable {
                                 onSearchChanged("")
                                 query = ""
-                                expanded = false
+                                isExpanded = false
                             })
                     } else {
                         Icon(Icons.Default.Search, contentDescription = null)
@@ -112,8 +112,8 @@ fun HeaderBar(
                 },
             )
         },
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
+        expanded = isExpanded,
+        onExpandedChange = { },
     ) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
             if (query.isNotEmpty() && query.length > 2) {
@@ -127,7 +127,6 @@ fun HeaderBar(
                             .clickable {
                                 query = it.name
                                 onSearchChanged(it.name)
-                                expanded = false
                             }
                             .fillMaxWidth()
                             .padding(

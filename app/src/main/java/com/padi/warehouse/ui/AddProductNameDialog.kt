@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -44,15 +43,15 @@ fun AddProductNameDialog(
     onClose: (productName: String) -> Unit
 ) {
     if (open) {
-        val context = LocalContext.current
         val viewModel: MainViewModel = viewModel()
 
+        val productNameErrorEmpty = stringResource(R.string.product_name_error_empty)
         val productName = remember {
             FieldState("") {
                 if (it.isEmpty()) {
                     return@FieldState Pair(
                         true,
-                        context.getString(R.string.product_name_error_empty)
+                        productNameErrorEmpty
                     )
                 }
                 return@FieldState Pair(false, "")
